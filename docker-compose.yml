@@ -1,0 +1,30 @@
+version: '3.7'
+services:
+
+  # the definition of the container for the database
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017" # with the port we can connect directly even outside compose network
+    volumes:
+      - mongo_volume:/data/db # the volume is for making database persistent
+  backend:
+    build:
+      context: backend
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_HOST=mongo:27017
+    volumes:
+      - ./backend:/app # this mapping allows change in the code without rebuilding the container
+
+  frontend:
+    build:
+      context: frontend
+    ports:
+      - "4200:4200" # the port on the host is 4200, in the container is 4200
+    volumes:
+      - ./frontend:/app
+
+volumes:
+  mongo_volume:
