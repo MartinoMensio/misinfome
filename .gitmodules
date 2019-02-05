@@ -1,9 +1,9 @@
 [submodule "backend"]
 	path = backend
-	url = git@github.com:MartinoMensio/misinformed_me_backend.git
+	url = https://github.com/MartinoMensio/MisinfoMe_backend.git
 [submodule "frontend"]
 	path = frontend
-	url = git@github.com:MartinoMensio/misinformed_me_frontend.git
+	url = https://github.com/MartinoMensio/MisinfoMe_frontend.git
 [submodule "datasets"]
 	path = datasets
-	url = git@github.com:MartinoMensio/misinformed_me_datasets.git
+	url = https://github.com/MartinoMensio/MisinfoMe_datasets.git
