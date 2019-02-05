@@ -29,10 +29,10 @@ docker run --name mm34834_mongo -p 20001:27017 -v mm34834_mongo_volume:/data/db 
 # successive times you will simply do
 docker start mm34834_mongo
 
-# create the docker container for backend
-docker build -t mm34834_server .
+# create the docker container for backend (run from the main folder)
+docker build -t mm34834/misinfo_server backend
 # then create a docker container with that
-docker run --name mm34834_server -p 20000:27027 -e MONGO_HOST=localhost:20001 mm23823_server
+docker run --name mm34834_server -p 20000:5000 -e MONGO_HOST=mongo:27017 -v `pwd`/backend:/app --link=mm34834_mongo:mongo mm34834/misinfo_server
 # successive times just run
 docker start mm23823_server
 ```
