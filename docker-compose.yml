@@ -8,6 +8,8 @@ services:
       - "27017:27017" # with the port we can connect directly even outside compose network
     volumes:
       - mongo_volume:/data/db # the volume is for making database persistent
+    logging:
+      driver: none
   backend:
     build:
       context: backend

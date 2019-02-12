@@ -6,4 +6,5 @@ pushd frontend
 ng build --base-href /misinfo/app/ --deploy-url "/misinfo/static/" --prod
 popd
 # and place the result in the backend static folder ready to be served
-cp -r frontend/dist/frontend/ backend/app
+rm -rf backend/app
+cp -a frontend/dist/frontend backend/app
