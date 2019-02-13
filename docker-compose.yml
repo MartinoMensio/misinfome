@@ -1,3 +1,5 @@
+# This docker configuration is for dev environment.
+# For production use the script build_frontend.sh and read README.md
 version: '3.7'
 services:
 
@@ -11,6 +13,7 @@ services:
     logging:
       driver: none
   backend:
+    command: python3 server.py # override command in development to get reload after file changes
     build:
       context: backend
     ports:

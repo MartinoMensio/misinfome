@@ -21,13 +21,17 @@ In order to make it available from anywhere, use the following command that will
 
 `ssh -R misinformedme_backend.serveo.net:80:localhost:5000 -R misinformedme.serveo.net:80:localhost:4200 serveo.net`
 
-## If you want to build it without compose
+## If you want to build it without compose (production)
 
 ```bash
 # create the docker container for mongo
 docker run --name mm34834_mongo -p 20001:27017 -v mm34834_mongo_volume:/data/db mongo
 # successive times you will simply do
 docker start mm34834_mongo
+
+# build the frontend and make it be served by the backend
+source build_frontend.sh
+# this will place the minified&transpiled frontend in the folder backend/app
 
 # create the docker container for backend (run from the main folder)
 docker build -t mm34834/misinfo_server backend
