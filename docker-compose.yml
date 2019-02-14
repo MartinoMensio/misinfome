@@ -29,9 +29,9 @@ services:
     ports:
       - "4200:4200" # the port on the host is 4200, in the container is 4200
     volumes:
-      - ./frontend:/app
-      - node_modules_frontend:/app/node_modules # this folder is not shared, it will go on a separate volume
+      - ./frontend/src:/app/src
+      - ./frontend/angular.json:/app/angular.json
+      - ./frontend/tsconfig.json:/app/tsconfig.json
 
 volumes:
   mongo_volume:
-  node_modules_frontend:
