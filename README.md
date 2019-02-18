@@ -43,6 +43,6 @@ docker start mm23823_server
 # to import the database in an environment where no mongo commands are installed, run the following
 docker run --name mm34834_mongoimporter -v `pwd`/backend/dump:/dump --link=mm34834_mongo:mongo -it mongo bash
 # then inside the container run
-mongorestore --host mongo --db test_coinform dump/test_coinform && mongorestore --host mongo --db datasets_resources dump/datasets_resources && echo "restored"
+mongorestore --host mongo --db datasets_resources dump/datasets_resources && echo "restored"
 # then exit the container and everything will be fine!
 ```
