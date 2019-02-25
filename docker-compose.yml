@@ -13,6 +13,8 @@ services:
     logging:
       driver: none
   backend:
+    depends_on:
+      - mongo
     command: python3 server.py # override command in development to get reload after file changes
     build:
       context: backend
@@ -20,8 +22,11 @@ services:
       - "5000:5000"
     environment:
       - MONGO_HOST=mongo:27017
+      - PYTHONUNBUFFERED=1
+      - FLASK_DEBUG=1
     volumes:
       - ./backend:/app # this mapping allows change in the code without rebuilding the container
+    restart: on-failure
 
   frontend:
     build:

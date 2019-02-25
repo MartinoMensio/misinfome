@@ -25,7 +25,7 @@ In order to make it available from anywhere, use the following command that will
 
 ```bash
 # create the docker container for mongo
-docker run --name mm34834_mongo -p 20001:27017 -v mm34834_mongo_volume:/data/db mongo
+docker run -dit --restart always --name mm34834_mongo -p 127.0.0.1:20001:27017 -v mm34834_mongo_volume:/data/db mongo
 # successive times you will simply do
 docker start mm34834_mongo
 
@@ -36,7 +36,7 @@ source build_frontend.sh
 # create the docker container for backend (run from the main folder)
 docker build -t mm34834/misinfo_server backend
 # then create a docker container with that
-docker run --name mm34834_server -p 20000:5000 -e MONGO_HOST=mongo:27017 -v `pwd`/backend:/app --link=mm34834_mongo:mongo mm34834/misinfo_server
+docker run -dit --restart always --name mm34834_server -p 127.0.0.1:20000:5000 -e MONGO_HOST=mongo:27017 -v `pwd`/backend:/app --link=mm34834_mongo:mongo mm34834/misinfo_server
 # successive times just run
 docker start mm23823_server
 
