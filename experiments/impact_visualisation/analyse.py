@@ -8,8 +8,8 @@ plt.style.use('seaborn-whitegrid')
 import numpy as np
 
 input_file = 'input_urls.tsv'
-url_time_distrib = 'http://localhost:5000/misinfo/api/url_time_distrib'
-url_get_factchecking_date = 'http://localhost:5000/misinfo/api/url_time_published'
+url_time_distrib = 'http://localhost:5000/misinfo/api/analysis/time_distribution'
+url_get_factchecking_date = 'http://localhost:5000/misinfo/api/utils/time_published'
 
 def read_inputs():
     with open(input_file) as f:
@@ -98,6 +98,8 @@ def plot_thing(data, name):
     ax.plot(x1, y1, color='r')
     ax.plot(x2, y2, color='g')
 
+    create_tsv([x1, y1, x2, y2], name)
+
     #plt.yscale('symlog', basey=2)
     plt.axvline(x=data['factchecking_date'], color='k')
     plt.xticks(rotation=90)
@@ -114,6 +116,15 @@ def plot_thing(data, name):
 
     plt.savefig('figs/' + name + '.png')
     plt.close()
+
+def create_tsv(iters, name):
+    lines = []
+    for z in zip(*iters):
+        #print(z)
+        z = [str(el) for el in z]
+        lines.append('\t'.join(list(z)))
+    with open('tsvs/' + name + '.tsv', 'w') as f:
+        f.write('\n'.join(lines))
 
 if __name__ == "__main__":
     #retrieve()
