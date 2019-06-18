@@ -38,7 +38,7 @@ docker build -t mm34834/misinfo_server backend
 # then create a docker container with that
 docker run -dit --restart always --name mm34834_server -p 127.0.0.1:20000:5000 -e MONGO_HOST=mongo:27017 -v `pwd`/backend:/app --link=mm34834_mongo:mongo mm34834/misinfo_server
 # successive times just run
-docker start mm23823_server
+docker start mm34834_server
 
 # to import the database in an environment where no mongo commands are installed, run the following
 docker run --name mm34834_mongoimporter -v `pwd`/backend/dump:/dump --link=mm34834_mongo:mongo -it mongo bash

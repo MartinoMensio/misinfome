@@ -3,7 +3,7 @@ import requests
 
 from tqdm import tqdm
 
-EVALUATION_URL = 'http://localhost:5000/count_urls/users?handle='
+EVALUATION_URL = 'http://localhost:5000/misinfo/api/analysis/twitter_accounts?screen_name='
 
 with open('list.json') as f:
     content = json.load(f)
