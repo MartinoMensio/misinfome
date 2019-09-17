@@ -36,7 +36,10 @@ source build_frontend.sh
 # create the docker container for backend (run from the main folder)
 docker build -t mm34834/misinfo_server backend
 # then create a docker container with that
-docker run -dit --restart always --name mm34834_server -p 127.0.0.1:20000:5000 -e MONGO_HOST=mongo:27017 -v `pwd`/backend:/app --link=mm34834_mongo:mongo mm34834/misinfo_server
+# --> local
+docker run -dit --restart always --name mm34834_misinfo_server -p 127.0.0.1:5000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -v `pwd`/backend:/app --link=twitter_app_mongo_1:mongo --link=mm34834_credibility:credibility --link=mm34834_twitter_connector:twitter_connector --network=twitter_app_default mm34834/misinfo_server
+# --> server
+docker run -dit --restart always --name mm34834_misinfo_server -p 127.0.0.1:20000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -v `pwd`/backend:/app --link=mm34834_mongo:mongo --link=mm34834_credibility:credibility --link=mm34834_twitter_connector:twitter_connector mm34834/misinfo_server
 # successive times just run
 docker start mm34834_server
 
@@ -46,3 +49,59 @@ docker run --name mm34834_mongoimporter -v `pwd`/backend/dump:/dump --link=mm348
 mongorestore --host mongo --db datasets_resources dump/datasets_resources && echo "restored"
 # then exit the container and everything will be fine!
 ```
+
+Start a redis:
+
+```bash
+docker run --rm --name mm34834_redis -p 6379:6379 redis
+```
+
+Celery worker:
+
+```bash
+#celery worker -A api.app.celery --loglevel=info
+celery worker -A api.model.jobs_manager.celery --loglevel=info
+```
+
+## Deployment to KMi server
+
+Copy the frontend (from the main folder, after running the `bash ./build_frontend.sh`)
+```
+scp -r backend/app mm34834@socsem.kmi.open.ac.uk:/data/user-data/mm34834/MisinfoMe/backend/
+```
+
+(create the database dump)
+```
+pushd backend
+make create_compressed_dump
+popd
+```
+
+Copy the database dump:
+```
+scp -r backend/dump.tar.gz mm34834@socsem.kmi.open.ac.uk:/data/user-data/mm34834/MisinfoMe/backend/
+```
+
+Extract the database dump (from the KMi server):
+```
+pushd backend
+make extract_dump
+popd
+```
+
+Import the dump:
+```
+# to import the database in an environment where no mongo commands are installed, run the following
+docker run --rm --name mm34834_mongoimporter -v `pwd`/backend/dump:/dump --link=mm34834_mongo:mongo -it mongo bash
+# then inside the container run
+mongorestore --host mongo --db datasets_resources dump/datasets_resources && echo "restored"
+# then exit the container and everything will be fine!
+```
+
+
+
+# Traefik
+
+Run the orchestrator
+
+docker run -p 80:80 -p 8080:8080 -v /var/run/docker.sock:/var/run/docker.sock traefik --api --docker
