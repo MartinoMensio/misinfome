@@ -37,9 +37,9 @@ source build_frontend.sh
 docker build -t mm34834/misinfo_server backend
 # then create a docker container with that
 # --> local
-docker run -dit --restart always --name mm34834_misinfo_server -p 127.0.0.1:5000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -v `pwd`/backend:/app --link=twitter_app_mongo_1:mongo --link=mm34834_credibility:credibility --link=mm34834_twitter_connector:twitter_connector --network=twitter_app_default mm34834/misinfo_server
+docker run -dit --restart always --name mm34834_misinfo_server -p 127.0.0.1:5000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -v `pwd`/backend:/app --link=twitter_app_mongo_1:mongo --link=mm34834_credibility:credibility --link=mm34834_twitter_connector:twitter_connector --link=mm34834_redis:redis --network=twitter_app_default mm34834/misinfo_server
 # --> server
-docker run -dit --restart always --name mm34834_misinfo_server -p 127.0.0.1:20000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -v `pwd`/backend:/app --link=mm34834_mongo:mongo --link=mm34834_credibility:credibility --link=mm34834_twitter_connector:twitter_connector mm34834/misinfo_server
+docker run -dit --restart always --name mm34834_misinfo_server -p 127.0.0.1:20000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -v `pwd`/backend:/app --link=mm34834_mongo:mongo --link=mm34834_credibility:credibility --link=mm34834_twitter_connector:twitter_connector --link=mm34834_redis:redis mm34834/misinfo_server
 # successive times just run
 docker start mm34834_server
 
@@ -53,14 +53,8 @@ mongorestore --host mongo --db datasets_resources dump/datasets_resources && ech
 Start a redis:
 
 ```bash
-docker run --rm --name mm34834_redis -p 6379:6379 redis
-```
-
-Celery worker:
-
-```bash
-#celery worker -A api.app.celery --loglevel=info
-celery worker -A api.model.jobs_manager.celery --loglevel=info
+#docker run --restart always -dit --name mm34834_redis -p 6379:6379 --network=twitter_app_default redis ### for local
+docker run --restart always -dit --name mm34834_redis -p 6379:6379 redis
 ```
 
 ## Deployment to KMi server
@@ -98,9 +92,53 @@ mongorestore --host mongo --db datasets_resources dump/datasets_resources && ech
 # then exit the container and everything will be fine!
 ```
 
+## Apache reverse proxy configuration
+
+Apache configuration
+
+misinfo.me
+
+```
+        ## Misinfo Service (mm34834):
+        # HTTPS https://cwiki.apache.org/confluence/display/httpd/RewriteHTTPToHTTPS
+        RewriteEngine On
+        RewriteCond %{HTTPS} !=on
+        RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
+
+        ProxyPass        /misinfo http://127.0.0.1:20000/misinfo
+        ProxyPassReverse /misinfo http://127.0.0.1:20000/misinfo
+        ProxyPass        / http://127.0.0.1:20000/misinfo
+        ProxyPassReverse / http://127.0.0.1:20000/misinfo
+        RedirectMatch permanent ^/$ /
+```
+
+socsem.kmi.open.ac.uk:
+
+```
+        ## Misinfo Service (mm34834):
+        # HTTPS https://cwiki.apache.org/confluence/display/httpd/RewriteHTTPToHTTPS
+        RewriteEngine On
+        RewriteCond %{HTTPS} !=on
+        RewriteRule ^/?misinfo/(.*) https://%{SERVER_NAME}/misinfo/$1 [R,L]
+        ProxyPass        /misinfo http://127.0.0.1:20000/misinfo
+        ProxyPassReverse /misinfo  http://127.0.0.1:20000/misinfo
+        RedirectMatch permanent ^/misinfo$ /misinfo
 
 
-# Traefik
+        ## Trivalent misinfo Service (mm34834):
+        # HTTPS https://cwiki.apache.org/confluence/display/httpd/RewriteHTTPToHTTPS
+        RewriteEngine On
+        RewriteCond %{HTTPS} !=on
+        RewriteRule ^/?trivalent/(.*) https://%{SERVER_NAME}/trivalent/$1 [R,L]
+        ProxyPass        /trivalent http://127.0.0.1:20100/trivalent
+        ProxyPassReverse /trivalent  http://127.0.0.1:20100/trivalent
+        RedirectMatch permanent ^/trivalent$ /trivalent
+```
+
+
+
+
+## Traefik (not used)
 
 Run the orchestrator
 

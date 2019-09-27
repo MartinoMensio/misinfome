@@ -12,6 +12,12 @@ services:
       - mongo_volume:/data/db # the volume is for making database persistent
     logging:
       driver: none
+    restart: always
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+      # no volumes, because it's just to manage pending jobs
   backend:
     depends_on:
       - mongo
@@ -24,9 +30,10 @@ services:
       - MONGO_HOST=mongo:27017
       - PYTHONUNBUFFERED=1
       - FLASK_DEBUG=1
+      - CREDIBILITY_ENDPOINT=TODO!!! it's outside of this compose!!!
     volumes:
       - ./backend:/app # this mapping allows change in the code without rebuilding the container
-    restart: on-failure
+    restart: on-failure:10
 
   frontend:
     build:
@@ -37,6 +44,7 @@ services:
       - ./frontend/src:/app/src
       - ./frontend/angular.json:/app/angular.json
       - ./frontend/tsconfig.json:/app/tsconfig.json
+    restart: on-failure:10
 
 volumes:
   mongo_volume:
