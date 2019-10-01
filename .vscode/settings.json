@@ -1,0 +1,4 @@
+{
+    "python.pythonPath": "backend/venv/bin/python3.7"
+    // "python.pythonPath": "datasets/venv/bin/python3.7"
+}
