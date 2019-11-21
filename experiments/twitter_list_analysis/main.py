@@ -1,21 +1,24 @@
 import requests
 import os
 import json
-#import dotenv
-BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAAPNu8wAAAAAAiYU6qc7ojh4%2Fcc%2Fd6c7pl8a3wm0%3Do5jATlzzgB2LtKFQjcy1dIqlydHDtAowrIPb8h2HslURF9rJJ7'
+import dotenv
+import plac
+dotenv.load_dotenv()
+BEARER_TOKEN = os.environ['BEARER_TOKEN']
 misinfome_endpoint = 'https://misinfo.me/misinfo/api/credibility/users/'
 
 def get_list_members(list_name, list_owner, update=False):
+    # up to 5000 per single request
     if update:
         res = requests.get(f'https://api.twitter.com/1.1/lists/members.json?slug={list_name}&owner_screen_name={list_owner}&count=5000', headers={'Authorization': f'Bearer {BEARER_TOKEN}'})
         print(res.status_code)
         data = res.json()
         print(data)
         users = data['users']
-        with open('users.json', 'w') as f:
+        with open('data/users.json', 'w') as f:
             json.dump(users, f, indent=2)
     else:
-        with open('users.json') as f:
+        with open('data/users.json') as f:
             users = json.load(f)
 
     return users
@@ -27,10 +30,10 @@ def get_job_ids(users, update=False):
             res = requests.get(f'{misinfome_endpoint}?screen_name={u["screen_name"]}&wait=false')
             job_id = res.json()['job_id']
             jobs_id[u['screen_name']] = job_id
-        with open('jobs_id.json', 'w') as f:
+        with open('data/jobs_id.json', 'w') as f:
             json.dump(jobs_id, f, indent=2)
     else:
-        with open('jobs_id.json') as f:
+        with open('data/jobs_id.json') as f:
             jobs_id = json.load(f)
     return jobs_id
 
@@ -40,7 +43,7 @@ def get_statuses(jobs_id):
         res = requests.get(f'https://misinfo.me/misinfo/api/jobs/status/{jid}')
         status = res.json()
         results[screen_name] = status
-    with open('statuses.json', 'w') as f:
+    with open('data/statuses.json', 'w') as f:
         json.dump(results, f, indent=2)
     return results
 
@@ -68,18 +71,18 @@ def analyse_results(results):
             n_pending += 1
     
     print('n_done', n_done, 'n_failures', n_failures, 'n_pending', n_pending, 'n_positive', n_positive, 'n_negative', n_negative, 'n_neutral', n_neutral)
-    with open('cred_dict.json', 'w') as f:
+    with open('data/cred_dict.json', 'w') as f:
         json.dump(cred_dict, f, indent=2)
     return cred_dict
         
 
-def do_things():
-    users = get_list_members('world-leaders', 'verified', update=True)
+def do_things(list_name, list_owner):
+    users = get_list_members(list_name, list_owner, update=True)
     jobs_id = get_job_ids(users, update=True)
     results = get_statuses(jobs_id)
 
     analyse_results(results)
 
 if __name__ == "__main__":
-    do_things()
+    do_things('world-leaders', 'verified')
     
