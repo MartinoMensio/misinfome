@@ -45,16 +45,15 @@ def get_job_ids(users, list_name, list_owner):
             jobs_id = json.load(f)
     return jobs_id
 
-def get_statuses(jobs_id, list_name, list_owner):
-    file_path = f'data/{list_name}_{list_owner}_statuses.json'
+def get_jobs_status(jobs_id, list_name, list_owner):
+    file_path = f'data/{list_name}_{list_owner}_jobs_status.json'
     # the call is done again if the file does not exist
     if os.path.exists(file_path):
         with open(file_path) as f:
             results = json.load(f)
     else:
         results = {}
-    print(len(results))
-    jobs_ids_not_done = {k: v for k,v in jobs_id.items() if results[k]['state'] != 'SUCCESS'}
+    jobs_ids_not_done = {k: v for k,v in jobs_id.items() if results.get(k, {}).get('state') != 'SUCCESS'}
     print(f'getting the status of {len(jobs_ids_not_done)}/{len(jobs_id)} of the uncompleted jobs')
     for screen_name, jid in jobs_ids_not_done.items():
         res = requests.get(f'https://misinfo.me/misinfo/api/jobs/status/{jid}')
@@ -94,16 +93,16 @@ def analyse_results(results, list_name, list_owner):
     return cred_dict
         
 
-def do_things(list_name, list_owner, update=True):
+def process_list(list_name, list_owner, update=True):
+    # from a list URL https://twitter.com/${LIST_OWNER}/lists/{LIST_NAME}/members get the LIST_NAME and LIST_OWNER params
     users = get_list_members(list_name, list_owner)
 
-    if update:
-        jobs_id = get_job_ids(users, list_name, list_owner)
-        results = get_statuses(jobs_id, list_name, list_owner)
+    jobs_id = get_job_ids(users, list_name, list_owner)
+    results = get_jobs_status(jobs_id, list_name, list_owner)
 
     analyse_results(results, list_name, list_owner)
 
 if __name__ == "__main__":
-    # do_things('world-leaders', 'verified')
-    do_things('uk-mps', 'twittergov')
+    process_list('world-leaders', 'verified')
+    process_list('uk-mps', 'twittergov')
     
