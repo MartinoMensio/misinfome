@@ -3,6 +3,8 @@ import os
 import json
 import dotenv
 import plac
+import csv
+
 dotenv.load_dotenv()
 BEARER_TOKEN = os.environ['BEARER_TOKEN']
 misinfome_endpoint = 'https://misinfo.me/misinfo/api/credibility/users/'
@@ -104,6 +106,7 @@ def process_twitter_users(users, name_prefix):
     jobs_id = get_job_ids(users, name_prefix)
     results = get_jobs_status(jobs_id, name_prefix)
 
+    to_tsv(results, name_prefix)
     analyse_results(results, name_prefix)
 
 def msp_on_twitter_get_list():
@@ -145,14 +148,70 @@ def lookup_users(users_screen_names, file_path=None):
 
 
 def msp_on_twitter_process():
+    # Prospective Parliamentary Candidates from https://www.mpsontwitter.co.uk/list
     original_list = msp_on_twitter_get_list()
     users = lookup_users([el['screen_name'].replace('@', '') for el in original_list], 'data/mps_on_twitter_users.json')
 
     process_twitter_users(users, 'mps_on_twitter')
 
 
+def to_tsv(results, name_prefix):
+    n_max_bad_sources = 0
+    n_max_bad_urls = 0
+    n_max_bad_tweets = 0 # from credibility_as_source
+    selections = []
+    for k, r in results.items():
+        selection = {}
+        # print(selection['screen_name'])
+        if r['state'] != 'SUCCESS':
+            selection['screen_name'] = k
+        else:
+            selection['screen_name'] = r['result']['itemReviewed']['screen_name']
+            selection['tweets_cnt'] = r['result']['itemReviewed']['tweets_cnt']
+            selection['shared_urls_cnt'] = r['result']['itemReviewed']['shared_urls_cnt']
+            selection['credibility.value'] = r['result']['credibility']['value']
+            selection['credibility.confidence'] = r['result']['credibility']['confidence']
+            bad_sources = [el['itemReviewed'] for el in r['result']['sources_credibility']['assessments'] if el['credibility']['value'] < 0.]
+            if len(bad_sources) > n_max_bad_sources:
+                n_max_bad_sources = len(bad_sources)
+            bad_urls = [el['itemReviewed'] for el in r['result']['urls_credibility']['assessments'] if el['credibility']['value'] < 0.]
+            if len(bad_urls) > n_max_bad_urls:
+                n_max_bad_urls = len(bad_urls)
+            # selection['checked_as_source'] = True if r['result']['profile_as_source_credibility'].get('assessments') else False
+            selection['bad_sources'] = bad_sources
+            selection['bad_urls'] = bad_urls
+
+        selections.append(selection)
+    
+    def replace_to_array(dictionary, key):
+        if key in dictionary:
+            val = dictionary[key]
+            del dictionary[key]
+            for i, el in enumerate(val):
+                dictionary[f'{key}_{i+1}'] = el
+
+    print('n_max_bad_sources', n_max_bad_sources)
+    print('n_max_bad_urls', n_max_bad_urls)
+    selections_keys = {k: 'foo' for k in selections[0].keys()}
+    selections_keys['bad_sources'] = ['foo' for i in range(n_max_bad_sources)]
+    selections_keys['bad_urls'] = ['foo' for i in range(n_max_bad_urls)]
+    replace_to_array(selections_keys, 'bad_sources')
+    replace_to_array(selections_keys, 'bad_urls')
+    print(selections_keys)
+
+    for r in selections:
+        replace_to_array(r, 'bad_sources')
+        replace_to_array(r, 'bad_urls')
+
+
+
+    with open(f'data/{name_prefix}_table.tsv', 'w') as f:
+        writer = csv.DictWriter(f, fieldnames=selections_keys.keys(), delimiter='\t')
+        writer.writeheader()
+        writer.writerows(selections)
+
 if __name__ == "__main__":
-    # process_list('world-leaders', 'verified')
-    # process_list('uk-mps', 'twittergov')
+    process_list('world-leaders', 'verified')
+    process_list('uk-mps', 'twittergov')
     msp_on_twitter_process()
     
