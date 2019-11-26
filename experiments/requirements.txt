@@ -1,3 +1,7 @@
 requests
 matplotlib
 tqdm
+pymongo
+python-dotenv
+plac
+goose
