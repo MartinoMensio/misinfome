@@ -23,7 +23,7 @@ def get_tweets_from_screen_name(user):
 def get_all_tweets(update_users=True, update_tweets=True):
     if update_users:
         original_list = list_processing.mps_on_twitter_get_list()
-        users = lookup_users([el['screen_name'].replace('@', '') for el in original_list], 'data/mps_on_twitter_users.json')
+        users = list_processing.lookup_users([el['screen_name'].replace('@', '') for el in original_list], 'data/mps_on_twitter_users.json')
     else:
         original_list = list_processing.read_json('data/mps_on_twitter_original_list.json')
         users = list_processing.read_json('data/mps_on_twitter_users.json')
