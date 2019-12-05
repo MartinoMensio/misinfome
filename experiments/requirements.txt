@@ -4,4 +4,8 @@ tqdm
 pymongo
 python-dotenv
 plac
-goose
+goose3
+dateparser
+pandas
+streamlit
+tldextract

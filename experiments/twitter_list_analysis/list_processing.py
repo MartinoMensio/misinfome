@@ -130,8 +130,8 @@ def split_in_chunks(iterable, chunk_size):
     for i in range(0, len(iterable), chunk_size):
         yield iterable[i:i+chunk_size]
 
-def lookup_users(users_screen_names, file_path=None):
-    if file_path:
+def lookup_users(users_screen_names, file_path=None, force_update=False):
+    if file_path and not force_update:
         update = not os.path.exists(file_path)
     else:
         update = True
