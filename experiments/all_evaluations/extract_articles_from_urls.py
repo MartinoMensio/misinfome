@@ -1,13 +1,20 @@
 import pymongo
 import csv
+import json
+import tldextract
+import pandas as pd
 from multiprocessing.pool import ThreadPool
 from tqdm import tqdm
 from goose3 import Goose
 
+
+# TODO all the unshortening
 g = Goose()
 
 mongo = pymongo.MongoClient()
 documents_now_collection = mongo['articles_collection']['documents_now']
+factchecking_collection = mongo['credibility']['factchecking_report']
+claimreviews_collection = mongo['claimreview_scraper']['claim_reviews']
 
 def get_url_cache(url):
     return documents_now_collection.find_one({'_id': url})
@@ -45,7 +52,7 @@ def process_one(row):
     url_object = get_or_retrieve_url(url)
     return url_object
 
-def main(file_name):
+def retrieve_all(file_name):
     with open(file_name) as f:
         reader = csv.DictReader(f, delimiter='\t')
         rows = [r for r in reader]
@@ -58,7 +65,118 @@ def main(file_name):
                 n_exceptions += 1
     # TODO do something with the results
     print(n_exceptions)
+
+def get_urls_table():
+    ### retrieves the table urls (url, credibility_value, credibility_confidence, original_label, review_url)
+    results = []
+    url_level_assessments = factchecking_collection.find({'granularity': 'itemReviewed'})
+    url_level_assessments = [el for el in url_level_assessments]
+    print(len(url_level_assessments))
+    for u in tqdm(url_level_assessments):
+        url = u['itemReviewed']
+        credibility_value = u['credibility']['value']
+        credibility_confidence = u['credibility']['confidence']
+        review_urls = u['original']['overall'].get('unknown', []) + u['original']['overall'].get('negative', []) + u['original']['overall'].get('positive', [])
+        review_urls = list(set(review_urls))
+        if len(review_urls) != 1:
+            print('found', len(review_urls), 'for', url)
+        matching_cr = claimreviews_collection.find({'url': {'$in': review_urls}})
+        for cr in matching_cr:
+            # TODO more details if alternateName not available
+            rating = cr.get('reviewRating', {})
+            original_label = rating.get('alternateName', f"{rating.get('ratingValue')} in [{rating.get('worstRating')}, {rating.get('bestRating')}]")
+            r = {
+                'url': url,
+                'credibility_value': credibility_value,
+                'credibility_confidence': credibility_confidence,
+                'original_label': original_label,
+                'review_url': cr['url']
+            }
+            found = False
+            for c in results:
+                unmatched_items = set(c.items()) ^ set(r.items())
+                if not len(unmatched_items):
+                    found= True
+                    break
+            if found:
+                # print(c, r)
+                # print('already there')
+                # exit(1)
+                pass
+            else:
+                results.append(r)
+
+    with open('urls_labeled.json', 'w') as f:
+        # writer = csv.DictWriter(f, fieldnames=r.keys(), delimiter='\t')
+        # writer.writeheader()
+        # writer.writerows(results)
+        json.dump(results, f, indent=2)
+    return results
+
+def join_info():
+    with open('urls_labeled.json') as f:
+        urls_labeled = json.load(f)
+    results = []
+    for id, r in enumerate(tqdm(urls_labeled)):
+        url = r['url']
+        data = get_or_retrieve_url(url)
+        if 'exception' in data:
+            print('exception for', url)
+            continue
+        source = get_url_domain(url)
+        # print(source)
+        if source == 'twitter.com':
+            # tweets data is in opengraph.description
+            headline = data['opengraph'].get('title', '')
+            body = data['opengraph'].get('description', '')
+        elif source == 'facebook.com':
+            headline = data['title']
+            body = data['meta'].get('description', '')
+            # print(headline, body)
+            # raise ValueError(1)
+        else:
+            headline = data['title']
+            body = data['cleaned_text']
+        res = {
+            'id': id,
+            'url': url,
+            'source': source,
+            'headline': headline,
+            'body': body,
+            'factchecker_label': r['original_label'],
+            'normalised_score': r['credibility_value'],
+            'normalised_confidence': r['credibility_confidence']
+        }
+        results.append(res)
+    with open('joined_tables.tsv', 'w') as f:
+        writer = csv.DictWriter(f, fieldnames=r.keys(), delimiter='\t')
+        writer.writeheader()
+        writer.writerows(results)
+
     
+def get_url_domain(url, only_tld=True):
+    """Returns the domain of the URL"""
+    if not url:
+        return ''
+    ext = tldextract.extract(url)
+    if not only_tld:
+        result = '.'.join(part for part in ext if part)
+    else:
+        result = '.'.join([ext.domain, ext.suffix])
+    if result.startswith('www.'):
+            # sometimes the www is there, sometimes not
+            result = result[4:]
+    return result.lower()
+
+def main():
+    # first get the table with the URLs
+    # get_urls_table()
+
+    # then run the scraping of the destination pages (content and title using Goose)
+    # retrieve_all('urls.tsv')
+
+    # and finally join the initial table with the scraped content
+    join_info()
 
 if __name__ == "__main__":
-    main('urls.tsv')
+    main()
