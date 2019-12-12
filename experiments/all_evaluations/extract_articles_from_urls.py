@@ -6,6 +6,9 @@ import pandas as pd
 from multiprocessing.pool import ThreadPool
 from tqdm import tqdm
 from goose3 import Goose
+from langdetect import detect
+from loguru import logger
+
 
 
 # TODO all the unshortening
@@ -137,11 +140,13 @@ def join_info():
         else:
             headline = data['title']
             body = data['cleaned_text']
+        lang = detect_lang(body)
         res = {
             'id': id,
             'url': url,
             'source': source,
             'headline': headline,
+            'lang': lang,
             'body': body,
             'factchecker_label': r['original_label'],
             'normalised_score': r['credibility_value'],
@@ -153,7 +158,18 @@ def join_info():
         writer.writeheader()
         writer.writerows(results)
 
-    
+'''
+A method returning the language of content. 
+'''
+def detect_lang(body):
+    lang = 'lang_err'
+    try:
+        lang = detect(body)
+    except:
+        logger.error("Error in {body}", body = body)
+    finally:
+        return lang
+
 def get_url_domain(url, only_tld=True):
     """Returns the domain of the URL"""
     if not url:
