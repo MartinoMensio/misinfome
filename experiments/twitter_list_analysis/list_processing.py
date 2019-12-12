@@ -16,8 +16,10 @@ def read_json(file_path):
     return result
 
 def write_json(file_path, content):
+    print('writing', file_path)
     with open(file_path, 'w') as f:
         json.dump(content, f, indent=2)
+    print('written', file_path)
 
 def get_list_members(list_name, list_owner):
     # up to 5000 per single request
@@ -124,13 +126,15 @@ def mps_on_twitter_get_list():
     print(res.status_code)
     data = res.json()
     write_json('data/mps_on_twitter_original_list.json', data)
+    for el in data:
+        el['screen_name'] = el['screen_name'].replace('@', '')
     return data
 
 def split_in_chunks(iterable, chunk_size):
     for i in range(0, len(iterable), chunk_size):
         yield iterable[i:i+chunk_size]
 
-def lookup_users(users_screen_names, file_path=None, force_update=False):
+def lookup_users(users_screen_names, file_path=None, force_update=True):
     if file_path and not force_update:
         update = not os.path.exists(file_path)
     else:
@@ -157,7 +161,7 @@ def mps_on_twitter_process(update=False):
     # Prospective Parliamentary Candidates from https://www.mpsontwitter.co.uk/list
     if update:
         original_list = mps_on_twitter_get_list()
-        users = lookup_users([el['screen_name'].replace('@', '') for el in original_list], 'data/mps_on_twitter_users.json')
+        users = lookup_users([el['screen_name'] for el in original_list], 'data/mps_on_twitter_users.json', force_update=update)
     else:
         original_list = read_json('data/mps_on_twitter_original_list.json')
         users = read_json('data/mps_on_twitter_users.json')
@@ -254,7 +258,7 @@ def mps_sources_by_party(original_list, sources_by_screen_name, name_prefix):
     # sources_by_party: {party: {source: count}}
     sources_by_party = defaultdict(lambda: defaultdict(lambda: 0))
     for candidate in original_list:
-        screen_name = candidate['screen_name'].replace('@', '')
+        screen_name = candidate['screen_name']
         party = candidate['party']
         user_sources = sources_by_screen_name.get(screen_name, {})
         print(screen_name, party, user_sources)

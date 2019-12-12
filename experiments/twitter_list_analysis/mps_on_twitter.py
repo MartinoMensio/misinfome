@@ -20,12 +20,17 @@ def get_tweets_from_screen_name(user):
         tweets = None
     return screen_name, tweets
 
-def get_all_tweets(update_users=True, update_tweets=True):
+def get_all_tweets(update_users=True, update_tweets=True, recollect_tweets=True):
+    """
+    - update_users: redownload user list
+    - update_tweets: use API to get tweets or just use the local file
+    - recollect_tweets: also for the profiles that we have already the tweets, rerun to collect the last tweets
+    """
+    original_list = list_processing.mps_on_twitter_get_list()
     if update_users:
-        original_list = list_processing.mps_on_twitter_get_list()
-        users = list_processing.lookup_users([el['screen_name'].replace('@', '') for el in original_list], 'data/mps_on_twitter_users.json', update_users)
+        users = list_processing.lookup_users([el['screen_name'] for el in original_list], 'data/mps_on_twitter_users.json', force_update=update_users)
     else:
-        original_list = list_processing.read_json('data/mps_on_twitter_original_list.json')
+        # original_list = list_processing.read_json('data/mps_on_twitter_original_list.json')
         users = list_processing.read_json('data/mps_on_twitter_users.json')
 
     print('original list contains', len(original_list))
@@ -37,13 +42,14 @@ def get_all_tweets(update_users=True, update_tweets=True):
     tweets_by_screen_name_path = 'data/mps_tweets_by_screen_name.json'
     if update_tweets:
         tweets = {}
-        if os.path.exists(tweets_by_screen_name_path):
-            tweets = list_processing.read_json(tweets_by_screen_name_path)
-        missing_tweet_collection = [u for u in users if u['screen_name'] not in tweets.keys()]
+        if not recollect_tweets:
+            if os.path.exists(tweets_by_screen_name_path):
+                tweets = list_processing.read_json(tweets_by_screen_name_path)
+        missing_tweet_collection = [u for u in original_list if u['screen_name'] not in tweets.keys()]
         updated = 0
         unsaved = False
         with ThreadPool(8) as pool:
-            for screen_name, ts in tqdm.tqdm(pool.imap_unordered(get_tweets_from_screen_name, missing_tweet_collection), total=len(missing_tweet_collection)):
+            for screen_name, ts in tqdm.tqdm(pool.imap_unordered(get_tweets_from_screen_name, missing_tweet_collection), total=len(missing_tweet_collection), desc='Retrieving tweets'):
                 # TODO if public user
                 if ts:
                     tweets[screen_name] = ts
@@ -68,7 +74,7 @@ def create_tsv_plain_tweets_with_links(tweets_by_screen_name):
     n_links = 0
     # tweets_by_screen_name = {k: v for i, (k,v) in enumerate(tweets_by_screen_name.items()) if i < 10}
 
-    for screen_name, user_tweets in tqdm.tqdm(tweets_by_screen_name.items()):
+    for screen_name, user_tweets in tqdm.tqdm(tweets_by_screen_name.items(), desc='Creating TSV of all the tweets with links'):
         for t in user_tweets:
             n_tweets += 1
             for l in t['links']:
@@ -100,8 +106,8 @@ def create_tsv_plain_tweets_with_links(tweets_by_screen_name):
 
 
 def get_tweet_table():
-    all_tweets = get_all_tweets(False, False)
-    # create_tsv_plain_tweets_with_links(all_tweets)
+    all_tweets = get_all_tweets(False, True, False)
+    create_tsv_plain_tweets_with_links(all_tweets)
 
 
 def main():
