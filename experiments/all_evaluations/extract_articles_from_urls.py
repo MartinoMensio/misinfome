@@ -84,6 +84,7 @@ def get_urls_table():
         if len(review_urls) != 1:
             print('found', len(review_urls), 'for', url)
         matching_cr = claimreviews_collection.find({'url': {'$in': review_urls}})
+        # TODO make them unique, for now they are multiple if the same claimReview is collected multiple times
         for cr in matching_cr:
             # TODO more details if alternateName not available
             rating = cr.get('reviewRating', {})
@@ -150,7 +151,8 @@ def join_info():
             'body': body,
             'factchecker_label': r['original_label'],
             'normalised_score': r['credibility_value'],
-            'normalised_confidence': r['credibility_confidence']
+            'normalised_confidence': r['credibility_confidence'],
+            'review_url': r['review_url']
         }
         results.append(res)
     with open('joined_tables.tsv', 'w') as f:
@@ -186,7 +188,7 @@ def get_url_domain(url, only_tld=True):
 
 def main():
     # first get the table with the URLs
-    # get_urls_table()
+    get_urls_table()
 
     # then run the scraping of the destination pages (content and title using Goose)
     # retrieve_all('urls.tsv')
