@@ -9,3 +9,5 @@ dateparser
 pandas
 streamlit
 tldextract
+langdetect
+loguru
