@@ -154,7 +154,7 @@ def join_info():
         }
         results.append(res)
     with open('joined_tables.tsv', 'w') as f:
-        writer = csv.DictWriter(f, fieldnames=r.keys(), delimiter='\t')
+        writer = csv.DictWriter(f, fieldnames=res.keys(), delimiter='\t')
         writer.writeheader()
         writer.writerows(results)
 
@@ -165,8 +165,8 @@ def detect_lang(body):
     lang = 'lang_err'
     try:
         lang = detect(body)
-    except:
-        logger.error("Error in {body}", body = body)
+    except Exception as e:
+        logger.warning(e)
     finally:
         return lang
 
