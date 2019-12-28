@@ -4,6 +4,6 @@
 [submodule "frontend"]
 	path = frontend
 	url = https://github.com/MartinoMensio/MisinfoMe_frontend.git
-[submodule "datasets"]
-	path = datasets
-	url = https://github.com/MartinoMensio/MisinfoMe_datasets.git
+[submodule "claimreview-scraper"]
+	path = claimreview-scraper
+	url = https://github.com/MartinoMensio/claimreview-scraper.git

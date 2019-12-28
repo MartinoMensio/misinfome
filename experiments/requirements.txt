@@ -11,3 +11,6 @@ streamlit
 tldextract
 langdetect
 loguru
+
+pylint
+autopep8
