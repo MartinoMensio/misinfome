@@ -7,3 +7,9 @@
 [submodule "claimreview-scraper"]
 	path = claimreview-scraper
 	url = https://github.com/MartinoMensio/claimreview-scraper.git
+[submodule "twitter_connector"]
+	path = twitter_connector
+	url = https://github.com/MartinoMensio/twitter_connector
+[submodule "credibility"]
+	path = credibility
+	url = https://github.com/MartinoMensio/credibility

@@ -13,15 +13,19 @@ services:
     logging:
       driver: none
     restart: always
+
   redis:
     image: redis:latest
     ports:
       - "6379:6379"
       # no volumes, because it's just to manage pending jobs
+
   backend:
     depends_on:
       - mongo
-    command: python3 wsgi.py # override command in development to get reload after file changes
+      - credibility
+      - twitter-connector
+    # command: python3 wsgi.py # override command in development to get reload after file changes
     build:
       context: backend
     ports:
@@ -30,21 +34,66 @@ services:
       - MONGO_HOST=mongo:27017
       - PYTHONUNBUFFERED=1
       - FLASK_DEBUG=1
-      - CREDIBILITY_ENDPOINT=TODO!!! it's outside of this compose!!!
+      - CREDIBILITY_ENDPOINT=http://credibility:8000
+      - TWITTER_CONNECTOR=http://twitter-connector:8000/
+      - REDIS_HOST=redis
+      - GATEWAY_MODULE_ENDPOINT=https://localhost:1234/test
     volumes:
       - ./backend:/app # this mapping allows change in the code without rebuilding the container
     restart: on-failure:10
 
-  frontend:
+  # frontend:
+  #   build:
+  #     context: frontend
+  #   ports:
+  #     - "4200:4200" # the port on the host is 4200, in the container is 4200
+  #   volumes:
+  #     - ./frontend/src:/app/src
+  #     - ./frontend/angular.json:/app/angular.json
+  #     - ./frontend/tsconfig.json:/app/tsconfig.json
+  #   restart: on-failure:10
+  
+  credibility:
     build:
-      context: frontend
-    ports:
-      - "4200:4200" # the port on the host is 4200, in the container is 4200
+      context: credibility
     volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/angular.json:/app/angular.json
-      - ./frontend/tsconfig.json:/app/tsconfig.json
+      - ./credibility:/app
+    ports:
+      - "20300:8000"
+    # expose:
+    #   - 20300
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_HOST=mongo:27017
     restart: on-failure:10
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.credibility.rule=PathPrefix(`/credibility`)
+    - "traefik.http.services.credibility.loadbalancer.server.port=20300"
+
+  twitter-connector:
+    build:
+      context: twitter_connector
+    volumes:
+      - ./twitter_connector:/app
+    ports:
+      - "20200:8000"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_HOST=mongo:27017
+    restart: on-failure:10
+
+  traefik:
+    image: traefik
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "443:443"
+    volumes:
+      - ./traefik.yml:/etc/traefik/traefik.yml
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   mongo_volume:

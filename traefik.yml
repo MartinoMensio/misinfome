@@ -1,0 +1,24 @@
+# Docker configuration backend
+providers:
+  docker:
+    defaultRule: "Host(`{{ trimPrefix `/` .Name }}.docker.localhost`)"
+
+# API and dashboard configuration
+api:
+  insecure: true
+
+
+# http:
+#   services:
+#     misinfo-backend:
+#       loadBalancer:
+#         servers:
+#         - url: 'mm34834-misinfo-server.docker.localhost'
+#     credibility:
+#       loadBalancer:
+#         servers:
+#         - port: 20300
+#   routers:
+#     my-router:
+#       rule: "PathPrefix(`/misinfo`)"
+#       service: misinfo-backend
