@@ -94,7 +94,8 @@ def get_urls_table():
                 'credibility_value': credibility_value,
                 'credibility_confidence': credibility_confidence,
                 'original_label': original_label,
-                'review_url': cr['url']
+                'review_url': cr['url'],
+                'review_date': cr.get('datePublished')
             }
             found = False
             for c in results:
@@ -142,6 +143,8 @@ def join_info():
             headline = data['title']
             body = data['cleaned_text']
         lang = detect_lang(body)
+        publish_date = data['publish_date']
+        factcheck_date = data['publish_date']
         res = {
             'id': id,
             'url': url,
@@ -149,10 +152,12 @@ def join_info():
             'headline': headline,
             'lang': lang,
             'body': body,
+            'publish_date': publish_date,
             'factchecker_label': r['original_label'],
             'normalised_score': r['credibility_value'],
             'normalised_confidence': r['credibility_confidence'],
-            'review_url': r['review_url']
+            'review_url': r['review_url'],
+            'review_date': r['review_date']
         }
         results.append(res)
     with open('joined_tables.tsv', 'w') as f:
