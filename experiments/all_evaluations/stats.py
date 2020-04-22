@@ -17,7 +17,10 @@ df['factchecker'] = df['review_url'].apply(get_url_domain)
 df['ternary_label'] = df['normalised_score'].apply(lambda x: 'positive' if x > 0 else ('negative' if x < 0 else 'neutral'))
 st.write(df.head())
 
-st.text(f"Total table has {len(df)} rows, {len(df['url'].unique())}")
+st.text(f"Total table has {len(df)} rows, {len(df['url'].unique())} unique")
+df_not_credible = df[df['normalised_score'] < 0]
+st.text(f"Total table has {len(df_not_credible)} rows with non_credible, {len(df_not_credible['url'].unique())} unique")
+
 fig = px.histogram(df, x="normalised_score")
 fig.update_layout(height=450)
 st.plotly_chart(fig, use_container_width=True)
@@ -25,8 +28,6 @@ fig = px.histogram(df, x="normalised_confidence")
 fig.update_layout(height=450)
 st.plotly_chart(fig, use_container_width=True)
 
-df_not_credible = df[df['normalised_score'] < 0]
-st.text(f'Filtered table has {len(df_not_credible)} rows')
 fig = px.histogram(df, x="source")
 fig.update_layout(height=450, yaxis_type="log")
 st.plotly_chart(fig, use_container_width=True)

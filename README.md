@@ -32,6 +32,9 @@ docker run -dit --restart always --name mm34834_mongo -p 127.0.0.1:20001:27017 -
 # successive times you will simply do
 docker start mm34834_mongo
 
+# update docker image and container
+sudo docker pull mongo && sudo docker rm -f mm34834_mongo && sudo docker run -dit --restart always --name mm34834_mongo -p 127.0.0.1:20001:27017 -v mm34834_mongo_volume:/data/db mongo
+
 # build the frontend and make it be served by the backend
 source build_frontend.sh
 # this will place the minified&transpiled frontend in the folder backend/app
@@ -58,7 +61,15 @@ Start a redis:
 ```bash
 #docker run --restart always -dit --name mm34834_redis -p 6379:6379 --network=twitter_app_default redis ### for local
 docker run --restart always -dit --name mm34834_redis -p 6379:6379 redis
+
+
+
+
+# update docker image and container
+sudo docker pull redis && sudo docker rm -f mm34834_redis && sudo docker run --restart always -dit --name mm34834_redis -p 6379:6379 redis
 ```
+
+
 
 ## Deployment to KMi server
 
