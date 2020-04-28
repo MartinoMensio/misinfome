@@ -95,7 +95,8 @@ def get_urls_table():
                 'credibility_confidence': credibility_confidence,
                 'original_label': original_label,
                 'review_url': cr['url'],
-                'review_date': cr.get('datePublished')
+                'review_date': cr.get('datePublished'),
+                'claim_reviewed': cr.get('claimReviewed')
             }
             found = False
             for c in results:
@@ -118,9 +119,17 @@ def get_urls_table():
         json.dump(results, f, indent=2)
     return results
 
-def join_info():
+def join_info(attach_poynter='/Users/mm35626/KMi/coinform/MisinfoMe/claimreview-scraper/poynter_covid.tsv'):
     with open('urls_labeled.json') as f:
         urls_labeled = json.load(f)
+    
+    if attach_poynter:
+        # TODO pandas read, get unique fact-checking URLS
+        df = pd.read_table(attach_poynter)
+        poynter_fact_checking_urls = df['factchecker_url'].unique()
+        print(len(poynter_fact_checking_urls))
+    else:
+        poynter_fact_checking_urls = False
     results = []
     for id, r in enumerate(tqdm(urls_labeled)):
         url = r['url']
@@ -145,6 +154,10 @@ def join_info():
         lang = detect_lang(body)
         publish_date = data['publish_date']
         factcheck_date = data['publish_date']
+        if len(poynter_fact_checking_urls):
+            covid_poynter = url in poynter_fact_checking_urls
+        else:
+            covid_poynter = False
         res = {
             'id': id,
             'url': url,
@@ -157,7 +170,9 @@ def join_info():
             'normalised_score': r['credibility_value'],
             'normalised_confidence': r['credibility_confidence'],
             'review_url': r['review_url'],
-            'review_date': r['review_date']
+            'review_date': r['review_date'],
+            'claim_reviewed': r['claim_reviewed'],
+            'in_covid_poynter': covid_poynter
         }
         results.append(res)
     with open('joined_tables.tsv', 'w') as f:

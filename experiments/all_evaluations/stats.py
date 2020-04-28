@@ -21,6 +21,8 @@ st.text(f"Total table has {len(df)} rows, {len(df['url'].unique())} unique")
 df_not_credible = df[df['normalised_score'] < 0]
 st.text(f"Total table has {len(df_not_credible)} rows with non_credible, {len(df_not_credible['url'].unique())} unique")
 
+st.text(f'{len(df["in_covid_poynter"].unique())} unique in COVID-poynter')
+
 fig = px.histogram(df, x="normalised_score")
 fig.update_layout(height=450)
 st.plotly_chart(fig, use_container_width=True)
