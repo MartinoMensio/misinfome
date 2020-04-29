@@ -50,3 +50,18 @@ st.plotly_chart(fig, use_container_width=True)
 fig = px.histogram(df, x="publish_date")
 fig.update_layout(height=450)
 st.plotly_chart(fig, use_container_width=True)
+
+st.header('Covid')
+# reviewed_claim
+def search_keywords(txt):
+    keywords = ['covid', 'coronavirus', 'corona virus']
+    r = any([k in str(txt).lower() for k in keywords])
+    return r
+
+df['corona'] = df.apply(lambda row: search_keywords(row['claim_reviewed']), axis=1)
+covid_df = df[df['corona']==True]
+st.text(f'rows: {len(covid_df)}, unique: {len(covid_df["url"].unique())}, negative: {len(covid_df[covid_df["ternary_label"] == "negative"]["url"].unique())}')
+covid_df.to_csv('covid_table.tsv', sep='\t')
+covid_df_without_body = covid_df.drop(columns=['body'])
+covid_df_without_body['claim_reviewed'] = [str(el).replace('\n', ' ') for el in covid_df_without_body['claim_reviewed']]
+covid_df_without_body.to_csv('covid_table_without_newlines.tsv', sep='\t')
