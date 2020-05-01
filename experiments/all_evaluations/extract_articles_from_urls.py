@@ -3,6 +3,7 @@ import csv
 import json
 import tldextract
 import pandas as pd
+from collections import defaultdict
 from multiprocessing.pool import ThreadPool
 from tqdm import tqdm
 from goose3 import Goose
@@ -19,13 +20,14 @@ documents_now_collection = mongo['articles_collection']['documents_now']
 factchecking_collection = mongo['credibility']['factchecking_report']
 claimreviews_collection = mongo['claimreview_scraper']['claim_reviews']
 
+
 def get_url_cache(url):
     return documents_now_collection.find_one({'_id': url})
 
 def save_url_cache(url_object):
     # add key
     url_object['_id'] = url_object['url']
-    return documents_now_collection.insert_one(url_object)
+    return documents_now_collection.replace_one({'_id': url_object['_id']}, url_object, upsert=True)
 
 def retrieve_url(url):
     try:
@@ -75,6 +77,16 @@ def get_urls_table():
     url_level_assessments = factchecking_collection.find({'granularity': 'itemReviewed'})
     url_level_assessments = [el for el in url_level_assessments]
     print(len(url_level_assessments))
+
+    # group the claimReviews by url
+    all_cr_by_url = defaultdict(list)
+    for cr in claimreviews_collection.find():
+        # print(cr['url'])
+        all_cr_by_url[cr['url']].append(cr)
+
+    # TODO need the function to get the claim appearances (import credibility or copy function)
+    # TODO create dict {appearance_url: list(claimreview_url)}
+
     for u in tqdm(url_level_assessments):
         url = u['itemReviewed']
         credibility_value = u['credibility']['value']
@@ -83,7 +95,7 @@ def get_urls_table():
         review_urls = list(set(review_urls))
         if len(review_urls) != 1:
             print('found', len(review_urls), 'for', url)
-        matching_cr = claimreviews_collection.find({'url': {'$in': review_urls}})
+        matching_cr = [cr for cr_url in review_urls for cr in all_cr_by_url[cr_url]]
         # TODO make them unique, for now they are multiple if the same claimReview is collected multiple times
         for cr in matching_cr:
             # TODO more details if alternateName not available
@@ -131,13 +143,34 @@ def join_info(attach_poynter='/Users/mm35626/KMi/coinform/MisinfoMe/claimreview-
     else:
         poynter_fact_checking_urls = False
     results = []
-    for id, r in enumerate(tqdm(urls_labeled)):
-        url = r['url']
-        data = get_or_retrieve_url(url)
-        if 'exception' in data:
-            print('exception for', url)
-            continue
-        source = get_url_domain(url)
+
+    with ThreadPool(32) as pool:
+        for row in tqdm(pool.imap(join_one_row, enumerate(urls_labeled)), total=len(urls_labeled)):
+            if row:
+                results.append(row)
+
+    with open('joined_tables.tsv', 'w') as f:
+        writer = csv.DictWriter(f, fieldnames=row.keys(), delimiter='\t')
+        writer.writeheader()
+        writer.writerows(results)
+
+
+def join_one_row(args):
+    id, r = args
+    url = r['url']
+    if not url.startswith('http'):
+        # not a URL
+        return None
+    data = get_or_retrieve_url(url)
+    source = get_url_domain(url)
+    if 'exception' in data:
+        print('exception for', url)
+        headline = ''
+        body = ''
+        lang = 'lang_error'
+        publish_date = ''
+        # return None
+    else:
         # print(source)
         if source == 'twitter.com':
             # tweets data is in opengraph.description
@@ -153,32 +186,40 @@ def join_info(attach_poynter='/Users/mm35626/KMi/coinform/MisinfoMe/claimreview-
             body = data['cleaned_text']
         lang = detect_lang(body)
         publish_date = data['publish_date']
-        factcheck_date = data['publish_date']
-        if len(poynter_fact_checking_urls):
-            covid_poynter = url in poynter_fact_checking_urls
-        else:
-            covid_poynter = False
-        res = {
-            'id': id,
-            'url': url,
-            'source': source,
-            'headline': headline,
-            'lang': lang,
-            'body': body,
-            'publish_date': publish_date,
-            'factchecker_label': r['original_label'],
-            'normalised_score': r['credibility_value'],
-            'normalised_confidence': r['credibility_confidence'],
-            'review_url': r['review_url'],
-            'review_date': r['review_date'],
-            'claim_reviewed': r['claim_reviewed'],
-            'in_covid_poynter': covid_poynter
-        }
-        results.append(res)
-    with open('joined_tables.tsv', 'w') as f:
-        writer = csv.DictWriter(f, fieldnames=res.keys(), delimiter='\t')
-        writer.writeheader()
-        writer.writerows(results)
+
+    data_review = get_or_retrieve_url(r['review_url'])
+    if 'exception' in data_review:
+        print('exception for', r['review_url'])
+        headline_review = ''
+        body_review = ''
+        # return None
+    else:
+        headline_review = data_review['title']
+        body_review = data_review['cleaned_text']
+
+    # if len(poynter_fact_checking_urls):
+    #     covid_poynter = url in poynter_fact_checking_urls
+    # else:
+    #     covid_poynter = False
+    res = {
+        'id': id,
+        'url': url,
+        'source': source,
+        'headline': headline,
+        'lang': lang,
+        'body': body,
+        'publish_date': publish_date,
+        'factchecker_label': r['original_label'],
+        'normalised_score': r['credibility_value'],
+        'normalised_confidence': r['credibility_confidence'],
+        'review_url': r['review_url'],
+        'review_date': r['review_date'],
+        'review_headline': headline_review,
+        'review_body': body_review,
+        'claim_reviewed': r['claim_reviewed'],
+        # 'in_covid_poynter': covid_poynter
+    }
+    return res
 
 '''
 A method returning the language of content. 
@@ -188,7 +229,8 @@ def detect_lang(body):
     try:
         lang = detect(body)
     except Exception as e:
-        logger.warning(e)
+        # logger.warning(e)
+        pass
     finally:
         return lang
 
