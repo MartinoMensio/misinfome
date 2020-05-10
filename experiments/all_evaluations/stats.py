@@ -77,20 +77,20 @@ fig = px.histogram(covid_df, x="review_date")
 fig.update_layout(height=450)
 st.plotly_chart(fig, use_container_width=True)
 
-min_date = st.date_input('From date', datetime.date(2020, 1, 1))
+# min_date = st.date_input('From date', datetime.date(2020, 1, 1))
 
-min_datetime = datetime.datetime(min_date.year, min_date.month, min_date.day, tzinfo=datetime.timezone.utc)
+# min_datetime = datetime.datetime(min_date.year, min_date.month, min_date.day, tzinfo=datetime.timezone.utc)
 
-# df['review_date'] = df['review_date'].dt.tz_localize('UTC', utc=True)
-df_2020 = df[df['review_date'] > min_datetime]
-st.text(f'rows: {len(df_2020)}, unique urls: {len(df_2020["url"].unique())}, unique factchecking urls: {len(df_2020["review_url"].unique())}, negative: {len(df_2020[df_2020["ternary_label"] == "negative"]["url"].unique())}')
+# # df['review_date'] = df['review_date'].dt.tz_localize('UTC', utc=True)
+# df_2020 = df[df['review_date'] > min_datetime]
+# st.text(f'rows: {len(df_2020)}, unique urls: {len(df_2020["url"].unique())}, unique factchecking urls: {len(df_2020["review_url"].unique())}, negative: {len(df_2020[df_2020["ternary_label"] == "negative"]["url"].unique())}')
 
-df_2020.to_csv('table_2020.tsv', sep='\t')
-df_2020_without_body = df_2020.drop(columns=['body', 'review_body'])
-df_2020_without_body['claim_reviewed'] = [str(el).replace('\n', ' ') for el in df_2020_without_body['claim_reviewed']]
-df_2020_without_body.to_csv('table_2020_without_newlines.tsv', sep='\t')
+# df_2020.to_csv('table_2020.tsv', sep='\t')
+# df_2020_without_body = df_2020.drop(columns=['body', 'review_body'])
+# df_2020_without_body['claim_reviewed'] = [str(el).replace('\n', ' ') for el in df_2020_without_body['claim_reviewed']]
+# df_2020_without_body.to_csv('table_2020_without_newlines.tsv', sep='\t')
 
-fig = px.histogram(df_2020, x="review_date")
-fig.update_layout(height=450)
-st.plotly_chart(fig, use_container_width=True)
+# fig = px.histogram(df_2020, x="review_date")
+# fig.update_layout(height=450)
+# st.plotly_chart(fig, use_container_width=True)
 
