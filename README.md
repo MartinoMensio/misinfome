@@ -28,7 +28,7 @@ In order to make it available from anywhere, use the following command that will
 # local
 docker run -dit --restart always --name mongo -p 127.0.0.1:27017:27017 -v mm34834_mongo_volume:/data/db mongo
 # server (stick to mongo:5 because server has old docker https://www.mongodb.com/community/forums/t/6-0-4-startup-error-on-docker/213908/2)
-docker run -dit --restart always --name mm35626_mongo -p 127.0.0.1:20001:27017 -v mm34834_mongo_volume:/data/db mongo:5
+docker run -dit --restart always --name mm35626_mongo -p 127.0.0.1:20001:27017 -v mm34834_mongo_volume_new:/data/db mongo:5
 # successive times you will simply do
 docker start mm35626_mongo
 
@@ -43,14 +43,14 @@ source build_frontend.sh
 docker build -t mm35626/misinfo_server backend
 # then create a docker container with that
 # --> local
-docker run -dit --restart always --name mm35626_misinfo_server -p 127.0.0.1:5000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -e DATA_ENDPOINT="http://claimreview_scraper:8000" -v `pwd`/backend:/app --link=mm34834_claimreview_scraper_light:claimreview_scraper --link=mm35626_mongo:mongo --link=mm34834_credibility:credibility --link=mm34834_twitter_connector:twitter_connector --link=mm34834_redis:redis mm35626/misinfo_server
+docker run -it --restart always --name mm35626_misinfo_server -p 5000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -e DATA_ENDPOINT="http://claimreview_scraper:8000" -v `pwd`/backend:/app --link=mm35626_claimreview_scraper_light:claimreview_scraper --link=mm35626_mongo:mongo --link=mm35626_credibility:credibility --link=mm35626_twitter_connector:twitter_connector --link=mm35626_redis:redis mm35626/misinfo_server
 # --> server
 docker run -dit --restart always --name mm35626_misinfo_server -p 127.0.0.1:20000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -e DATA_ENDPOINT="http://claimreview_scraper:8000" -v `pwd`/backend:/app --link=mm35626_claimreview_scraper_light:claimreview_scraper --link=mm35626_mongo:mongo --link=mm35626_credibility:credibility --link=mm35626_twitter_connector:twitter_connector --link=mm35626_redis:redis mm35626/misinfo_server
 # successive times just run
 docker start mm35626_misinfo_server
 
 # to import the database in an environment where no mongo commands are installed, run the following
-docker run --rm --name mm34834_mongoimporter -v `pwd`/backend/dump:/dump --link=mm34834_mongo:mongo -it mongo bash
+docker run --rm --name mm35626_mongoimporter -v `pwd`/backend/dump:/dump --link=mm35626_mongo:mongo -it mongo bash
 # then inside the container run
 mongorestore --host mongo --db datasets_resources dump/datasets_resources && echo "restored"
 # then exit the container and everything will be fine!
@@ -59,7 +59,7 @@ mongorestore --host mongo --db datasets_resources dump/datasets_resources && ech
 Start a redis:
 
 ```bash
-#docker run --restart always -dit --name mm34834_redis -p 6379:6379 --network=twitter_app_default redis ### for local
+#docker run --restart always -dit --name mm35626_redis -p 6379:6379 redis ### for local
 docker run --restart always -dit --name mm35626_redis -p 127.0.0.1:6379:6379 redis
 
 
@@ -100,7 +100,7 @@ popd
 Import the dump:
 ```
 # to import the database in an environment where no mongo commands are installed, run the following
-docker run --rm --name mm34834_mongoimporter -v `pwd`/backend/dump:/dump --link=mm34834_mongo:mongo -it mongo bash
+docker run --rm --name mm35626_mongoimporter -v `pwd`/backend/dump:/dump --link=mm35626_mongo:mongo -it mongo bash
 # then inside the container run
 mongorestore --host mongo --db datasets_resources dump/datasets_resources && echo "restored"
 # then exit the container and everything will be fine!
@@ -126,6 +126,67 @@ misinfo.me
         RedirectMatch permanent ^/$ /
         AllowEncodedSlashes NoDecode
 ```
+
+Backup config (old)
+```
+        # section :80
+        ## Misinfo Service (mm34834):
+        # HTTPS https://cwiki.apache.org/confluence/display/httpd/RewriteHTTPToHTTPS
+        RewriteEngine On
+        RewriteCond %{HTTPS} !=on
+        RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
+
+        ProxyPass        /misinfo http://127.0.0.1:20000/misinfo
+        ProxyPassReverse /misinfo http://127.0.0.1:20000/misinfo
+        ProxyPass        / http://127.0.0.1:20000/misinfo
+        ProxyPassReverse / http://127.0.0.1:20000/misinfo
+        RedirectMatch permanent ^/$ /
+        AllowEncodedSlashes NoDecode
+
+
+        # section :443
+        ## Misinfo Service (mm34834):
+        #<Directory "/data/web/misinfo.me/www/frontend-v2/">
+        #  FallbackResource index.html
+        #</Directory>
+        <Location "/frontend-v2">
+          FallbackResource /frontend-v2/index.html
+        </Location>
+        #RewriteEngine on
+        RedirectMatch ^/$ /frontend-v2/
+        ProxyPass        /misinfo http://127.0.0.1:20000/misinfo
+        ProxyPassReverse /misinfo http://127.0.0.1:20000/misinfo
+        #ProxyPass        / http://127.0.0.1:20000/misinfo
+        #ProxyPassReverse / http://127.0.0.1:20000/misinfo
+        AllowEncodedSlashes NoDecode
+        #RedirectMatch permanent ^/$ /misinfo
+        #RewriteRule "^/misinfo(.*)$"
+```
+
+NEW CONFIG
+```
+        # section :80
+        ## Misinfo Service (mm34834):
+        # HTTPS https://cwiki.apache.org/confluence/display/httpd/RewriteHTTPToHTTPS
+        RewriteEngine On
+        RewriteCond %{HTTPS} !=on
+        RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
+
+
+        ProxyPass        / http://127.0.0.1:20000/
+        ProxyPassReverse / http://127.0.0.1:20000/
+        AllowEncodedSlashes NoDecode
+
+
+        # section :443
+        ## Misinfo Service (mm34834):
+        #RewriteEngine on
+        #ProxyPass        / http://127.0.0.1:20000/
+        #ProxyPassReverse / http://127.0.0.1:20000/
+        AllowEncodedSlashes NoDecode
+```
+sudo systemctl restart httpd.service
+
 
 socsem.kmi.open.ac.uk:
 
