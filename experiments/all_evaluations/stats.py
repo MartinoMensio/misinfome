@@ -18,6 +18,12 @@ df['factchecker'] = df['review_url'].apply(get_url_domain)
 df['ternary_label'] = df['normalised_score'].apply(lambda x: 'positive' if x > 0 else ('negative' if x < 0 else 'neutral'))
 st.write(df.head())
 
+if st.checkbox('Analyse labels'):
+    unique_labels = df['factchecker_label'].unique()
+    st.write(f'{len(unique_labels)} unique labels')
+    st.write(f'{len(df["review_url"].unique())} unique review_url')
+    st.table(unique_labels)
+
 st.text(f"Total table has {len(df)} rows, {len(df['url'].unique())} unique")
 df_not_credible = df[df['normalised_score'] < 0]
 st.text(f"Total table has {len(df_not_credible)} rows with non_credible, {len(df_not_credible['url'].unique())} unique")

@@ -28,12 +28,12 @@ In order to make it available from anywhere, use the following command that will
 # local
 docker run -dit --restart always --name mongo -p 127.0.0.1:27017:27017 -v mm34834_mongo_volume:/data/db mongo
 # server (stick to mongo:5 because server has old docker https://www.mongodb.com/community/forums/t/6-0-4-startup-error-on-docker/213908/2)
-docker run -dit --restart always --name mm35626_mongo -p 127.0.0.1:20001:27017 -v mm34834_mongo_volume_new:/data/db mongo:5
+docker run -dit --restart always --name mm35626_mongo -p 127.0.0.1:20001:27017 -v mm35626_mongo_volume:/data/db mongo:5
 # successive times you will simply do
 docker start mm35626_mongo
 
-# update docker image and container
-sudo docker pull mongo:5 && sudo docker rm -f mm35626_mongo && sudo docker run -dit --restart always --name mm35626_mongo -p 127.0.0.1:20001:27017 -v mm34834_mongo_volume_new:/data/db mongo:5
+# update docker image and container (kmi-appsvr04)
+sudo docker pull mongo:5 && sudo docker rm -f mm35626_mongo && sudo docker run -dit --restart always --name mm35626_mongo -p 127.0.0.1:20001:27017 -v mm35626_mongo_volume:/data/db mongo:5
 
 # build the frontend and make it be served by the backend
 source build_frontend.sh
