@@ -40,12 +40,12 @@ source build_frontend.sh
 # this will place the minified&transpiled frontend in the folder backend/app
 
 # create the docker container for backend (run from the main folder)
-docker build -t mm35626/misinfo_server backend
+docker build -t martinomensio/misinfome-backend backend
 # then create a docker container with that
 # --> local
-docker run -it --restart always --name mm35626_misinfo_server -p 5000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -e DATA_ENDPOINT="http://claimreview_scraper:8000" -v `pwd`/backend:/app --link=mm35626_claimreview_scraper_light:claimreview_scraper --link=mm35626_mongo:mongo --link=mm35626_credibility:credibility --link=mm35626_twitter_connector:twitter_connector --link=mm35626_redis:redis mm35626/misinfo_server
+docker run -it --restart always --name mm35626_misinfo_server -p 5000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -e DATA_ENDPOINT="http://claimreview_scraper:8000" -v `pwd`/backend/api:/app/api -v `pwd`/backend/app-v1:/app/app-v1 -v `pwd`/backend/app-v2:/app/app-v2 --link=mm35626_claimreview_collector_light:claimreview_scraper --link=mm35626_mongo:mongo --link=mm35626_credibility:credibility --link=mm35626_twitter_connector:twitter_connector --link=mm35626_redis:redis martinomensio/misinfome-backend
 # --> server
-docker run -dit --restart always --name mm35626_misinfo_server -p 127.0.0.1:20000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -e DATA_ENDPOINT="http://claimreview_scraper:8000" -v `pwd`/backend:/app --link=mm35626_claimreview_scraper_light:claimreview_scraper --link=mm35626_mongo:mongo --link=mm35626_credibility:credibility --link=mm35626_twitter_connector:twitter_connector --link=mm35626_redis:redis mm35626/misinfo_server
+docker run -it --restart always --name mm35626_misinfo_server -p 127.0.0.1:20000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -e DATA_ENDPOINT="http://claimreview_scraper:8000" -v `pwd`/backend/app-v1:/app/app-v1 -v `pwd`/backend/app-v2:/app/app-v2  --link=mm35626_claimreview_collector_light:claimreview_scraper --link=mm35626_mongo:mongo --link=mm35626_credibility:credibility --link=mm35626_twitter_connector:twitter_connector --link=mm35626_redis:redis martinomensio/misinfome-backend
 # successive times just run
 docker start mm35626_misinfo_server
 
