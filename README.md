@@ -1,4 +1,4 @@
-# misinformed_me
+# MisinfoMe
 
 ## Installation
 
@@ -15,20 +15,15 @@ git submodule update
 
 in `backend` run `make import_compressed_dump` to load the database from the dump (not provided).
 
-## Make it available to the world
-
-In order to make it available from anywhere, use the following command that will create ssh tunnels:
-
-`ssh -R misinformedme_backend.serveo.net:80:localhost:5000 -R misinformedme.serveo.net:80:localhost:4200 serveo.net`
 
 ## If you want to build it without compose (production)
 
 ```bash
 # create the docker container for mongo
 # local
-docker run -dit --restart always --name mongo -p 127.0.0.1:27017:27017 -v mm34834_mongo_volume:/data/db mongo
+docker run -dit --restart always --name mongo -p 127.0.0.1:27017:27017 -v mm5626_mongo_volume:/data/db mongo
 # server (stick to mongo:5 because server has old docker https://www.mongodb.com/community/forums/t/6-0-4-startup-error-on-docker/213908/2)
-docker run -dit --restart always --name mm35626_mongo -p 127.0.0.1:20001:27017 -v mm35626_mongo_volume:/data/db mongo:5
+docker run -dit --restart always --name mm35626_mongo -p 127.0.0.1:20001:27017 -v mm5626_mongo_volume:/data/db mongo:5
 # successive times you will simply do
 docker start mm35626_mongo
 
@@ -43,9 +38,9 @@ source build_frontend.sh
 docker build -t martinomensio/misinfome-backend backend
 # then create a docker container with that
 # --> local
-docker run -it --restart always --name mm35626_misinfo_server -p 5000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -e DATA_ENDPOINT="http://claimreview_scraper:8000" -v `pwd`/backend/api:/app/api -v `pwd`/backend/app-v1:/app/app-v1 -v `pwd`/backend/app-v2:/app/app-v2 --link=mm35626_claimreview_collector_light:claimreview_scraper --link=mm35626_mongo:mongo --link=mm35626_credibility:credibility --link=mm35626_twitter_connector:twitter_connector --link=mm35626_redis:redis martinomensio/misinfome-backend
+docker run -it --restart always --name mm35626_misinfo_server -p 5000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -e DATA_ENDPOINT="http://claimreview_scraper:8000" -v `pwd`/backend/api:/app/api -v `pwd`/backend/app-v1:/app/app-v1 -v `pwd`/backend/app-v2:/app/app-v2 -v `pwd`/backend/.env:/app/.env --link=mm35626_claimreview_collector_light:claimreview_scraper --link=mm35626_mongo:mongo --link=mm35626_credibility:credibility --link=mm35626_twitter_connector:twitter_connector --link=mm35626_redis:redis martinomensio/misinfome-backend
 # --> server
-docker run -it --restart always --name mm35626_misinfo_server -p 127.0.0.1:20000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter_connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -e DATA_ENDPOINT="http://claimreview_scraper:8000" -v `pwd`/backend/app-v1:/app/app-v1 -v `pwd`/backend/app-v2:/app/app-v2  --link=mm35626_claimreview_collector_light:claimreview_scraper --link=mm35626_mongo:mongo --link=mm35626_credibility:credibility --link=mm35626_twitter_connector:twitter_connector --link=mm35626_redis:redis martinomensio/misinfome-backend
+docker run -it --restart always --name mm35626_misinfo_server -p 127.0.0.1:20000:5000 -e MONGO_HOST=mongo:27017 -e CREDIBILITY_ENDPOINT=http://credibility:8000 -e TWITTER_CONNECTOR="http://twitter-connector:8000/" -e REDIS_HOST="redis" -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" -e DATA_ENDPOINT="http://claimreview-scraper:8000" -v `pwd`/backend/app-v1:/app/app-v1 -v `pwd`/backend/app-v2:/app/app-v2 -v `pwd`/backend/.env:/app/.env --link=mm35626_claimreview_collector_light:claimreview-scraper --link=mm35626_mongo:mongo --link=mm35626_credibility:credibility --link=mm35626_twitter_connector:twitter-connector --link=mm35626_redis:redis martinomensio/misinfome-backend
 # successive times just run
 docker start mm35626_misinfo_server
 

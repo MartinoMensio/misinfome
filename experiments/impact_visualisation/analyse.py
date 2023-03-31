@@ -2,14 +2,36 @@ import csv
 import json
 import requests
 import matplotlib
+import dateparser
 matplotlib.use('PS')
 import matplotlib.pyplot as plt
 plt.style.use('seaborn-whitegrid')
 import numpy as np
 
-input_file = 'input_urls.tsv'
-url_time_distrib = 'http://localhost:5000/misinfo/api/analysis/time_distribution'
+input_file = 'input_urls_ukraine.tsv'
+url_time_distrib = 'http://localhost:5000/misinfo/api/analysis/time_distribution_url'
 url_get_factchecking_date = 'http://localhost:5000/misinfo/api/utils/time_published'
+
+
+def convert_date(date_str):
+    d = dateparser.parse(date_str).date()
+    return {
+        'date': d.strftime('%d/%m/%Y'),
+        'round_month': round_date(d, 'month'),
+        'round_week': round_date(d, 'week'),
+        'round_day': round_date(d, 'day'),
+    }
+
+def round_date(date, time_granularity):
+    if time_granularity == 'year':
+        time_group = '{}'.format(date.year)
+    elif time_granularity == 'month':
+        time_group = '{}/{:02d}'.format(date.year, date.month)
+    elif time_granularity == 'week':
+        time_group = '{}/w{:02}'.format(date.isocalendar()[0], date.isocalendar()[1])
+    elif time_granularity == 'day':
+        time_group = '{}/{:02d}/{:02d}'.format(date.year, date.month, date.day)
+    return time_group
 
 def read_inputs():
     with open(input_file) as f:
@@ -26,9 +48,10 @@ def retrieve():
     for r in rows:
         factchecking_url = r['factchecking']
         claim_url = r['claim']
-        factchecking_updated = r['factchecking_updated']
+        # factchecking_updated = r['factchecking_updated']
         id = r['id']
-        response_date = requests.get(url_get_factchecking_date, params={'url': factchecking_updated}).json()
+        # response_date = requests.get(url_get_factchecking_date, params={'url': factchecking_url}).json()
+        response_date = convert_date(r['date'])
 
         response_factchecking_week = requests.get(url_time_distrib, params={'url': factchecking_url, 'time_granularity': 'week'}).json()
         response_claim_week = requests.get(url_time_distrib, params={'url': claim_url, 'time_granularity': 'week'}).json()
@@ -36,7 +59,7 @@ def retrieve():
         response_claim_day = requests.get(url_time_distrib, params={'url': claim_url, 'time_granularity': 'day'}).json()
         response_factchecking_month = requests.get(url_time_distrib, params={'url': factchecking_url, 'time_granularity': 'month'}).json()
         response_claim_month = requests.get(url_time_distrib, params={'url': claim_url, 'time_granularity': 'month'}).json()
-
+        print(response_claim_day)
 
         result_week.append({
             'id': id,
@@ -127,5 +150,5 @@ def create_tsv(iters, name):
         f.write('\n'.join(lines))
 
 if __name__ == "__main__":
-    #retrieve()
+    retrieve()
     plot_all()
