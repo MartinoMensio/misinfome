@@ -13,3 +13,6 @@
 [submodule "claimreview-scraper"]
 	path = claimreview-scraper
 	url = https://github.com/MartinoMensio/claimreview-scraper.git
+[submodule "frontend-v2"]
+	path = frontend-v2
+	url = https://github.com/MartinoMensio/misinfome-frontend-v2.git
