@@ -14,8 +14,6 @@ cp -a frontend-v2/dist/misinfome-frontend-v2 backend/app-v2
 
 exit
 # Deploy TO KMi server
-pushd frontend-v2
-ng build --base-href /frontend-v2/
 # scp -r /frontend-v2/dist/misinfome-frontend-v2 mm35626@kmi-web03.open.ac.uk:/data/user-data/mm35626/
 scp -r frontend-v2/dist/misinfome-frontend-v2/. mm35626@kmi-web03.open.ac.uk:/data/user-data/mm35626/MisinfoMe/backend/app-v2/.
-popd
+# then docker restart mm35626_misinfo_server
