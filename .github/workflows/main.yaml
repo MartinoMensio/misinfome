@@ -22,7 +22,7 @@ jobs:
     name: Merge PR
     runs-on: ubuntu-latest
     needs: test
-    if: ${{ github.event.issue.pull_request }}
+    if: ${{ github.event.pull_request }}
     steps:
     -
       name: merge a pull request
