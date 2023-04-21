@@ -1,0 +1,50 @@
+name: main
+
+on:
+  push:
+    branches:
+      - '*'
+  schedule:
+    - cron: "0 8 * * 1" # monday morning, after dependabot
+  pull_request:
+
+jobs:
+  test:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    steps:
+    - 
+      uses: actions/checkout@v3
+    -
+      name: run tests
+      run: echo "TODO"
+  docker:
+    name: Docker publish tag latest
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref_name == 'master'
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{github.ref_name}}
+    -
+      name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+    -
+      name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - 
+      name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - 
+      name: Get Releases with latest date
+      id: date
+      run: echo "TODO" >> $GITHUB_ENV
+    -
+      name: Build and push
+      run: echo "TODO"
