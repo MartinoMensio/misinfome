@@ -44,7 +44,7 @@ jobs:
     - 
       name: Get Releases with latest date
       id: date
-      run: echo "TODO" >> $GITHUB_ENV
+      run: echo "TAG=TODO" >> $GITHUB_ENV
     -
       name: Build and push
       run: echo "TODO"
