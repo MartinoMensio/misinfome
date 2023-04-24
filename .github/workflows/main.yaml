@@ -11,6 +11,7 @@ on:
 jobs:
   concurrency:
     name: wait for other concurrent workflows
+    runs-on: ubuntu-latest
     steps:
     - 
       uses: actions/checkout@v3
