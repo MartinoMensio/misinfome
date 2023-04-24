@@ -1,8 +1,39 @@
 version: 2
 
 updates:
+  # schedule each submodule at a different time, so no concurrent updates
   - package-ecosystem: gitsubmodule
     schedule:
         interval: "daily"
-        time: "07:00"
+        time: "02:00"
     directory: /
+    allow:
+      - dependency-name: "claimreview-scraper"
+  - package-ecosystem: gitsubmodule
+    schedule:
+        interval: "daily"
+        time: "03:00"
+    directory: /
+    allow:
+      - dependency-name: "credibility"
+  - package-ecosystem: gitsubmodule
+    schedule:
+        interval: "daily"
+        time: "04:00"
+    directory: /
+    allow:
+      - dependency-name: "twitter_connector"
+  - package-ecosystem: gitsubmodule
+    schedule:
+        interval: "daily"
+        time: "05:00"
+    directory: /
+    allow:
+      - dependency-name: "backend"
+  - package-ecosystem: gitsubmodule
+    schedule:
+        interval: "daily"
+        time: "06:00"
+    directory: /
+    allow:
+      - dependency-name: "frontend-v2"
