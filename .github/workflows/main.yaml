@@ -9,9 +9,17 @@ on:
   pull_request:
 
 jobs:
+  concurrency:
+    name: wait for other concurrent workflows
+    steps:
+    - 
+      uses: actions/checkout@v3
+    - 
+      uses: ahmadnassri/action-workflow-queue@v1
   test:
     name: Integration tests
     runs-on: ubuntu-latest
+    needs: concurrency
     steps:
     - 
       uses: actions/checkout@v3
