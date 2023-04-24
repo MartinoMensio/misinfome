@@ -13,7 +13,9 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
-      - name: Automatically update PR
+      - 
+        if: ${{ github.event.pull_request }}
+        name: Automatically update PR
         uses: lcdsmao/update-branch@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
