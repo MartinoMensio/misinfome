@@ -9,6 +9,8 @@ on:
   pull_request:
   repository_dispatch:
 
+permissions: write-all
+
 jobs:
   concurrency:
     name: wait for other concurrent workflows
@@ -20,7 +22,6 @@ jobs:
       uses: ahmadnassri/action-workflow-queue@v1
   update-branch:
     name: if PR, update branch
-    permissions: write-all
     runs-on: ubuntu-latest
     needs: concurrency
     steps:
@@ -59,7 +60,6 @@ jobs:
       name: run tests
       run: echo "TODO"
   merge:
-    permissions: write-all
     name: Merge PR if this is a PR
     runs-on: ubuntu-latest
     needs: test
