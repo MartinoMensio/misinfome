@@ -32,10 +32,10 @@ jobs:
           fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
       - 
         if: ${{ github.event.pull_request }}
-        name: Automatically update PR to master
-        uses: lcdsmao/update-branch@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        name: Automatic Rebase PR
+        uses: cirrus-actions/rebase@1.7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   update-submodule:
     name: Update submodule triggered by repository_dispatch
     runs-on: ubuntu-latest
