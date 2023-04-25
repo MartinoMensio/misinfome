@@ -76,8 +76,8 @@ jobs:
       run: bash scripts/start_services_web.sh
     - 
       if: ${{ github.event_name == 'repository_dispatch' }}
-      name: Instantiate with docker with dev ${{ github.event.client_payload.submodule }}}
-      run: bash scripts/start_services_web.sh -d ${{ github.event.client_payload.submodule }}
+      name: Instantiate with docker with dev ${{ github.event.client_payload.repository }}}
+      run: bash scripts/start_services_web.sh -d ${{ github.event.client_payload.repository }}
     - 
       name: Test
       run: echo TODO
