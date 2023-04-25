@@ -74,7 +74,7 @@ if [ "$local" = "1" ]; then
     docker run -dit --restart always \
         --name mm35626_twitter_connector \
         -p 127.0.0.1:20200:8000 \
-        -v `pwd`/twitter_connector/app:/app/app \
+        -v `pwd`/twitter-connector/app:/app/app \
         -e MONGO_HOST=mongo:27017 \
         -e TWITTER_TOKEN_ACADEMIC=$TWITTER_TOKEN_ACADEMIC \
         --link=mm35626_mongo:mongo \
