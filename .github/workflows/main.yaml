@@ -42,12 +42,12 @@ jobs:
         popd
     - 
       if: ${{ github.event_name == 'repository_dispatch' }}
-      name: add and commit changes for {{ github.event.client_payload.submodule }}
+      name: add and commit changes for ${{ github.event.client_payload.submodule }}
       uses: EndBug/add-and-commit@v9
       with:
         # The arguments for the `git add` command (see the paragraph below for more info)
         # Default: '.'
-        add: '{{ github.event.client_payload.submodule }}'
+        add: '${{ github.event.client_payload.submodule }}'
         # Additional arguments for the git commit command. The --message argument is already set by the message input.
         # Default: ''
         commit: --signoff
@@ -61,7 +61,7 @@ jobs:
 
         # The message for the commit.
         # Default: 'Commit from GitHub Actions (name of the workflow)'
-        message: '[automatic] updated submodule {{ github.event.client_payload.submodule }} to ${{ github.event.client_payload.commit_sha }}'
+        message: '[automatic] updated submodule ${{ github.event.client_payload.submodule }} to ${{ github.event.client_payload.commit_sha }}'
 
         # The way the action should handle pathspec errors from the add and remove commands. Three options are available:
         # - ignore -> errors will be logged but the step won't fail
@@ -75,7 +75,7 @@ jobs:
       run: bash scripts/start_services_web.sh
     - 
       if: ${{ github.event_name == 'repository_dispatch' }}
-      name: Instantiate with docker with dev {{ github.event.client_payload.submodule }}}
+      name: Instantiate with docker with dev ${{ github.event.client_payload.submodule }}}
       run: bash scripts/start_services_web.sh -d ${{ github.event.client_payload.submodule }}
     - 
       name: Test
@@ -90,4 +90,4 @@ jobs:
     - 
       if: ${{ github.event_name == 'repository_dispatch' && github.ref_name == 'master' }}
       name: retag docker images
-      run: docker container run -i --rm --net host -v regctl-conf:/home/appuser/.regctl/ ghcr.io/regclient/regctl:latest image copy {{ github.event.client_payload.submodule }}:dev {{ github.event.client_payload.submodule }}:latest
+      run: docker container run -i --rm --net host -v regctl-conf:/home/appuser/.regctl/ ghcr.io/regclient/regctl:latest image copy ${{ github.event.client_payload.submodule }}:dev ${{ github.event.client_payload.submodule }}:latest
