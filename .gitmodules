@@ -4,9 +4,6 @@
 [submodule "frontend"]
 	path = frontend
 	url = https://github.com/MartinoMensio/MisinfoMe_frontend.git
-[submodule "twitter_connector"]
-	path = twitter_connector
-	url = https://github.com/MartinoMensio/twitter_connector
 [submodule "credibility"]
 	path = credibility
 	url = https://github.com/MartinoMensio/credibility
@@ -16,3 +13,6 @@
 [submodule "frontend-v2"]
 	path = frontend-v2
 	url = https://github.com/MartinoMensio/misinfome-frontend-v2.git
+[submodule "twitter-connector"]
+	path = twitter-connector
+	url = https://github.com/MartinoMensio/twitter-connector.git
