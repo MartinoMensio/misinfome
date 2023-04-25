@@ -83,12 +83,7 @@ jobs:
       run: echo TODO
     - 
       if: ${{ github.event_name == 'repository_dispatch' && github.ref_name == 'master' }}
-      name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - 
-      if: ${{ github.event_name == 'repository_dispatch' && github.ref_name == 'master' }}
       name: retag docker images
-      run: docker container run -i --rm --net host -v regctl-conf:/home/appuser/.regctl/ ghcr.io/regclient/regctl:latest image copy ${{ github.event.client_payload.submodule }}:dev ${{ github.event.client_payload.submodule }}:latest
+      run: |
+        docker container run -i --rm --net host -v regctl-conf:/home/appuser/.regctl/ ghcr.io/regclient/regctl:latest registry login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }} docker.io
+        docker container run -i --rm --net host -v regctl-conf:/home/appuser/.regctl/ ghcr.io/regclient/regctl:latest image copy ${{ github.event.client_payload.submodule }}:dev ${{ github.event.client_payload.submodule }}:latest
