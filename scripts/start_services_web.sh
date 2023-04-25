@@ -1,0 +1,172 @@
+#!/bin/sh
+set -e
+
+local=0
+remove=0
+help=0
+
+while getopts hlr flag
+do
+    case "${flag}" in
+        l) local=1;;
+        r) remove=1;;
+        h) help=1;;
+    esac
+done
+
+if [ "$help" = "1" ]; then
+    echo "Usage: $0 [-l] [-r] [-h]"
+    echo "  -l: run locally"
+    echo "  -r: remove containers"
+    echo "  -h: help"
+    exit 0
+fi
+
+if [ "$remove" = "1" ]; then
+    echo "Removing containers"
+    docker rm -f mm35626_mongo mm35626_redis mm35626_misinfo_server mm35626_claimreview_collector_light mm35626_credibility mm35626_twitter_connector
+    exit 0
+fi
+
+echo "Reading .env file"
+export $(grep -v '^#' .env | xargs)
+
+# mongodb
+echo "Starting mongodb"
+
+docker pull mongo:5
+docker run -d --restart always \
+    --name mm35626_mongo \
+    -p 127.0.0.1:20001:27017 \
+    -v mm5626_mongo_volume:/data/db \
+    mongo:5
+
+# redis
+echo "Starting redis"
+docker pull redis
+docker run -d --restart always \
+    --name mm35626_redis \
+    -p 127.0.0.1:6379:6379 \
+    redis
+
+# twitter connector
+echo "Starting twitter connector"
+docker pull martinomensio/twitter-connector
+if [ "$local" = "1" ]; then
+    docker run -d --restart always \
+        --name mm35626_twitter_connector \
+        -p 127.0.0.1:20200:8000 \
+        -v `pwd`/twitter_connector/app:/app/app \
+        -e MONGO_HOST=mongo:27017 \
+        -e TWITTER_TOKEN_ACADEMIC=$TWITTER_TOKEN_ACADEMIC \
+        --link=mm35626_mongo:mongo \
+        martinomensio/twitter-connector
+else
+    docker run -d --restart always \
+        --name mm35626_twitter_connector \
+        -p 127.0.0.1:20200:8000 \
+        -e MONGO_HOST=mongo:27017 \
+        -e TWITTER_TOKEN_ACADEMIC=$TWITTER_TOKEN_ACADEMIC \
+        --link=mm35626_mongo:mongo \
+        martinomensio/twitter-connector
+fi
+
+# claimreview collector
+echo "Starting claimreview collector light"
+docker pull martinomensio/claimreview-collector
+if [ "$local" = "1" ]; then
+    # local light (no link, using local misinfome). Start before misinfo_server
+    # mapping the source code as volume overwriting, so can restart and test easily
+    docker run -d --restart always \
+        --name mm35626_claimreview_collector_light \
+        -p 127.0.0.1:20400:8000 \
+        -v `pwd`/claimreview-scraper/data:/app/data \
+        -v `pwd`/claimreview-scraper/claimreview_scraper:/app/claimreview_scraper \
+        --link=mm35626_mongo:mongo \
+        -e MONGO_HOST=mongo:27017 \
+        -e ROLE=light \
+        martinomensio/claimreview-collector
+else
+    # server web (ROLE=light)
+    docker run -d --restart always \
+        --name mm35626_claimreview_collector_light \
+        -p 127.0.0.1:20400:8000 \
+        -v `pwd`/claimreview-scraper/data:/app/data \
+        --link=mm35626_mongo:mongo \
+        -e MONGO_HOST=mongo:27017 \
+        -e ROLE=light \
+        martinomensio/claimreview-collector
+fi
+
+# credibility
+echo "Starting credibility"
+docker pull martinomensio/credibility
+if [ "$local" = "1" ]; then
+    docker run -d --restart always \
+    --name mm35626_credibility \
+    -p 127.0.0.1:20300:8000 \
+    -e MONGO_HOST=mongo:27017 \
+    -e MYWOT_USERID=$MYWOT_USERID \
+    -e MYWOT_KEY=$MYWOT_KEY \
+    -e PINKSLIME_SPREADSHEET_KEY=$PINKSLIME_SPREADSHEET_KEY \
+    -v `pwd`/credibility/app:/app/app \
+    --link=mm35626_mongo:mongo \
+    martinomensio/credibility
+else
+    # server web
+    docker run -d --restart always \
+    --name mm35626_credibility \
+    -p 127.0.0.1:20300:8000 \
+    -e MONGO_HOST=mongo:27017 \
+    -e MYWOT_USERID=$MYWOT_USERID \
+    -e MYWOT_KEY=$MYWOT_KEY \
+    -e PINKSLIME_SPREADSHEET_KEY=$PINKSLIME_SPREADSHEET_KEY \
+    --link=mm35626_mongo:mongo \
+    martinomensio/credibility
+fi
+
+# misinfo-server
+echo "Starting misinfo-server"
+docker pull martinomensio/misinfome-backend
+if [ "$local" = "1" ]; then
+    # local
+    docker run -d --restart always \
+    --name mm35626_misinfo_server \
+    -p 127.0.0.1:20000:5000 \
+    -e MONGO_HOST=mongo:27017 \
+    -e CREDIBILITY_ENDPOINT=http://credibility:8000 \
+    -e TWITTER_CONNECTOR="http://twitter_connector:8000/" \
+    -e REDIS_HOST="redis" \
+    -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" \
+    -e DATA_ENDPOINT="http://claimreview_scraper:8000" \
+    -e COINFORM_TOKEN=$COINFORM_TOKEN \
+    -v `pwd`/backend/api:/app/api \
+    -v `pwd`/backend/app-v1:/app/app-v1 \
+    -v `pwd`/backend/app-v2:/app/app-v2 \
+    --link=mm35626_claimreview_collector_light:claimreview_scraper \
+    --link=mm35626_mongo:mongo \
+    --link=mm35626_credibility:credibility \
+    --link=mm35626_twitter_connector:twitter_connector \
+    --link=mm35626_redis:redis \
+    martinomensio/misinfome-backend
+else
+    # server web
+    docker run -d --restart always \
+    --name mm35626_misinfo_server \
+    -p 127.0.0.1:20000:5000 \
+    -e MONGO_HOST=mongo:27017 \
+    -e CREDIBILITY_ENDPOINT=http://credibility:8000 \
+    -e TWITTER_CONNECTOR="http://twitter-connector:8000/" \
+    -e REDIS_HOST="redis" \
+    -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" \
+    -e DATA_ENDPOINT="http://claimreview-scraper:8000" \
+    -e COINFORM_TOKEN=$COINFORM_TOKEN \
+    -v `pwd`/backend/app-v1:/app/app-v1 \
+    -v `pwd`/backend/app-v2:/app/app-v2 \
+    --link=mm35626_claimreview_collector_light:claimreview-scraper \
+    --link=mm35626_mongo:mongo \
+    --link=mm35626_credibility:credibility \
+    --link=mm35626_twitter_connector:twitter-connector \
+    --link=mm35626_redis:redis \
+    martinomensio/misinfome-backend
+fi
