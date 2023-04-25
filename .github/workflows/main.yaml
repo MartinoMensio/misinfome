@@ -39,6 +39,7 @@ jobs:
       run: |
         pushd ${{ github.event.client_payload.submodule }}
         git fetch
+        git checkout ${{ github.event.client_payload.commit_sha }}
         popd
     - 
       if: ${{ github.event_name == 'repository_dispatch' }}
