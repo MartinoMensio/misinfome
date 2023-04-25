@@ -4,20 +4,31 @@ set -e
 local=0
 remove=0
 help=0
+BACKEND_DEV_TAG=latest
+CREDIBILITY_DEV_TAG=latest
+TWITTER_DEV_TAG=latest
+CLAIMREVIEW_DEV_TAG=latest
 
-while getopts hlr flag
+while getopts mrd:h flag
 do
     case "${flag}" in
-        l) local=1;;
+        m) local=1;;
         r) remove=1;;
         h) help=1;;
+        d) case "${OPTARG}" in
+            misinfome-backend) BACKEND_DEV_TAG=dev;;
+            credibility) CREDIBILITY_DEV_TAG=dev;;
+            twitter-connector) TWITTER_DEV_TAG=dev;;
+            claimreview-scraper) CLAIMREVIEW_DEV_TAG=dev;;
+        esac;;
     esac
 done
 
 if [ "$help" = "1" ]; then
-    echo "Usage: $0 [-l] [-r] [-h]"
-    echo "  -l: run locally"
+    echo "Usage: $0 [-l] [-r] [-d misinfome-backend|credibility|twitter-connector|claimreview-scraper] [-h]"
+    echo "  -m: run with source code mapped as volume"
     echo "  -r: remove containers"
+    echo "  -d: which submodule is using dev tag (misinfome-backend, credibility, twitter-connector, claimreview-scraper)"
     echo "  -h: help"
     exit 0
 fi
@@ -30,6 +41,13 @@ fi
 
 echo "Reading .env file"
 export $(grep -v '^#' .env | xargs)
+
+echo "Tags:"
+echo "  backend: $BACKEND_DEV_TAG"
+echo "  credibility: $CREDIBILITY_DEV_TAG"
+echo "  twitter-connector: $TWITTER_DEV_TAG"
+echo "  claimreview-scraper: $CLAIMREVIEW_DEV_TAG"
+
 
 # mongodb
 echo "Starting mongodb"
@@ -51,7 +69,7 @@ docker run -d --restart always \
 
 # twitter connector
 echo "Starting twitter connector"
-docker pull martinomensio/twitter-connector
+docker pull martinomensio/twitter-connector:$TWITTER_DEV_TAG
 if [ "$local" = "1" ]; then
     docker run -d --restart always \
         --name mm35626_twitter_connector \
@@ -60,7 +78,7 @@ if [ "$local" = "1" ]; then
         -e MONGO_HOST=mongo:27017 \
         -e TWITTER_TOKEN_ACADEMIC=$TWITTER_TOKEN_ACADEMIC \
         --link=mm35626_mongo:mongo \
-        martinomensio/twitter-connector
+        martinomensio/twitter-connector:$TWITTER_DEV_TAG
 else
     docker run -d --restart always \
         --name mm35626_twitter_connector \
@@ -68,12 +86,12 @@ else
         -e MONGO_HOST=mongo:27017 \
         -e TWITTER_TOKEN_ACADEMIC=$TWITTER_TOKEN_ACADEMIC \
         --link=mm35626_mongo:mongo \
-        martinomensio/twitter-connector
+        martinomensio/twitter-connector:$TWITTER_DEV_TAG
 fi
 
 # claimreview collector
 echo "Starting claimreview collector light"
-docker pull martinomensio/claimreview-collector
+docker pull martinomensio/claimreview-collector:$CLAIMREVIEW_DEV_TAG
 if [ "$local" = "1" ]; then
     # local light (no link, using local misinfome). Start before misinfo_server
     # mapping the source code as volume overwriting, so can restart and test easily
@@ -85,7 +103,7 @@ if [ "$local" = "1" ]; then
         --link=mm35626_mongo:mongo \
         -e MONGO_HOST=mongo:27017 \
         -e ROLE=light \
-        martinomensio/claimreview-collector
+        martinomensio/claimreview-collector:$CLAIMREVIEW_DEV_TAG
 else
     # server web (ROLE=light)
     docker run -d --restart always \
@@ -95,12 +113,12 @@ else
         --link=mm35626_mongo:mongo \
         -e MONGO_HOST=mongo:27017 \
         -e ROLE=light \
-        martinomensio/claimreview-collector
+        martinomensio/claimreview-collector:$CLAIMREVIEW_DEV_TAG
 fi
 
 # credibility
 echo "Starting credibility"
-docker pull martinomensio/credibility
+docker pull martinomensio/credibility:$CREDIBILITY_DEV_TAG
 if [ "$local" = "1" ]; then
     docker run -d --restart always \
     --name mm35626_credibility \
@@ -111,7 +129,7 @@ if [ "$local" = "1" ]; then
     -e PINKSLIME_SPREADSHEET_KEY=$PINKSLIME_SPREADSHEET_KEY \
     -v `pwd`/credibility/app:/app/app \
     --link=mm35626_mongo:mongo \
-    martinomensio/credibility
+    martinomensio/credibility:$CREDIBILITY_DEV_TAG
 else
     # server web
     docker run -d --restart always \
@@ -122,12 +140,12 @@ else
     -e MYWOT_KEY=$MYWOT_KEY \
     -e PINKSLIME_SPREADSHEET_KEY=$PINKSLIME_SPREADSHEET_KEY \
     --link=mm35626_mongo:mongo \
-    martinomensio/credibility
+    martinomensio/credibility:$CREDIBILITY_DEV_TAG
 fi
 
 # misinfo-server
 echo "Starting misinfo-server"
-docker pull martinomensio/misinfome-backend
+docker pull martinomensio/misinfome-backend:$BACKEND_DEV_TAG
 if [ "$local" = "1" ]; then
     # local
     docker run -d --restart always \
@@ -148,7 +166,7 @@ if [ "$local" = "1" ]; then
     --link=mm35626_credibility:credibility \
     --link=mm35626_twitter_connector:twitter_connector \
     --link=mm35626_redis:redis \
-    martinomensio/misinfome-backend
+    martinomensio/misinfome-backend:$BACKEND_DEV_TAG
 else
     # server web
     docker run -d --restart always \
@@ -168,5 +186,5 @@ else
     --link=mm35626_credibility:credibility \
     --link=mm35626_twitter_connector:twitter-connector \
     --link=mm35626_redis:redis \
-    martinomensio/misinfome-backend
+    martinomensio/misinfome-backend:$BACKEND_DEV_TAG
 fi
