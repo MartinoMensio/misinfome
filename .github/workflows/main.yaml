@@ -86,4 +86,4 @@ jobs:
       name: retag docker images
       run: |
         docker container run -i --rm --net host -v regctl-conf:/home/appuser/.regctl/ ghcr.io/regclient/regctl:latest registry login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-        docker container run -i --rm --net host -v regctl-conf:/home/appuser/.regctl/ ghcr.io/regclient/regctl:latest image copy ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.client_payload.submodule }}:dev ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.client_payload.submodule }}:latest
+        docker container run -i --rm --net host -v regctl-conf:/home/appuser/.regctl/ ghcr.io/regclient/regctl:latest image copy ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.client_payload.repository }}:dev ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.client_payload.repository }}:latest
