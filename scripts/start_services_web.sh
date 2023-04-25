@@ -19,16 +19,16 @@ do
             misinfome-backend) BACKEND_DEV_TAG=dev;;
             credibility) CREDIBILITY_DEV_TAG=dev;;
             twitter-connector) TWITTER_DEV_TAG=dev;;
-            claimreview-scraper) CLAIMREVIEW_DEV_TAG=dev;;
+            claimreview-collector) CLAIMREVIEW_DEV_TAG=dev;;
         esac;;
     esac
 done
 
 if [ "$help" = "1" ]; then
-    echo "Usage: $0 [-l] [-r] [-d misinfome-backend|credibility|twitter-connector|claimreview-scraper] [-h]"
+    echo "Usage: $0 [-l] [-r] [-d misinfome-backend|credibility|twitter-connector|claimreview-collector] [-h]"
     echo "  -m: run with source code mapped as volume"
     echo "  -r: remove containers"
-    echo "  -d: which submodule is using dev tag (misinfome-backend, credibility, twitter-connector, claimreview-scraper)"
+    echo "  -d: which submodule is using dev tag (misinfome-backend, credibility, twitter-connector, claimreview-collector)"
     echo "  -h: help"
     exit 0
 fi
@@ -46,14 +46,14 @@ echo "Tags:"
 echo "  backend: $BACKEND_DEV_TAG"
 echo "  credibility: $CREDIBILITY_DEV_TAG"
 echo "  twitter-connector: $TWITTER_DEV_TAG"
-echo "  claimreview-scraper: $CLAIMREVIEW_DEV_TAG"
+echo "  claimreview-collector: $CLAIMREVIEW_DEV_TAG"
 
 
 # mongodb
 echo "Starting mongodb"
 
 docker pull mongo:5
-docker run -d --restart always \
+docker run -dit --restart always \
     --name mm35626_mongo \
     -p 127.0.0.1:20001:27017 \
     -v mm5626_mongo_volume:/data/db \
@@ -62,7 +62,7 @@ docker run -d --restart always \
 # redis
 echo "Starting redis"
 docker pull redis
-docker run -d --restart always \
+docker run -dit --restart always \
     --name mm35626_redis \
     -p 127.0.0.1:6379:6379 \
     redis
@@ -71,7 +71,7 @@ docker run -d --restart always \
 echo "Starting twitter connector"
 docker pull martinomensio/twitter-connector:$TWITTER_DEV_TAG
 if [ "$local" = "1" ]; then
-    docker run -d --restart always \
+    docker run -dit --restart always \
         --name mm35626_twitter_connector \
         -p 127.0.0.1:20200:8000 \
         -v `pwd`/twitter_connector/app:/app/app \
@@ -80,7 +80,7 @@ if [ "$local" = "1" ]; then
         --link=mm35626_mongo:mongo \
         martinomensio/twitter-connector:$TWITTER_DEV_TAG
 else
-    docker run -d --restart always \
+    docker run -dit --restart always \
         --name mm35626_twitter_connector \
         -p 127.0.0.1:20200:8000 \
         -e MONGO_HOST=mongo:27017 \
@@ -95,21 +95,21 @@ docker pull martinomensio/claimreview-collector:$CLAIMREVIEW_DEV_TAG
 if [ "$local" = "1" ]; then
     # local light (no link, using local misinfome). Start before misinfo_server
     # mapping the source code as volume overwriting, so can restart and test easily
-    docker run -d --restart always \
+    docker run -dit --restart always \
         --name mm35626_claimreview_collector_light \
         -p 127.0.0.1:20400:8000 \
-        -v `pwd`/claimreview-scraper/data:/app/data \
-        -v `pwd`/claimreview-scraper/claimreview_scraper:/app/claimreview_scraper \
+        -v `pwd`/claimreview-collector/data:/app/data \
+        -v `pwd`/claimreview-collector/claimreview_collector:/app/claimreview_collector \
         --link=mm35626_mongo:mongo \
         -e MONGO_HOST=mongo:27017 \
         -e ROLE=light \
         martinomensio/claimreview-collector:$CLAIMREVIEW_DEV_TAG
 else
     # server web (ROLE=light)
-    docker run -d --restart always \
+    docker run -dit --restart always \
         --name mm35626_claimreview_collector_light \
         -p 127.0.0.1:20400:8000 \
-        -v `pwd`/claimreview-scraper/data:/app/data \
+        -v `pwd`/claimreview-collector/data:/app/data \
         --link=mm35626_mongo:mongo \
         -e MONGO_HOST=mongo:27017 \
         -e ROLE=light \
@@ -120,7 +120,7 @@ fi
 echo "Starting credibility"
 docker pull martinomensio/credibility:$CREDIBILITY_DEV_TAG
 if [ "$local" = "1" ]; then
-    docker run -d --restart always \
+    docker run -dit --restart always \
     --name mm35626_credibility \
     -p 127.0.0.1:20300:8000 \
     -e MONGO_HOST=mongo:27017 \
@@ -132,7 +132,7 @@ if [ "$local" = "1" ]; then
     martinomensio/credibility:$CREDIBILITY_DEV_TAG
 else
     # server web
-    docker run -d --restart always \
+    docker run -dit --restart always \
     --name mm35626_credibility \
     -p 127.0.0.1:20300:8000 \
     -e MONGO_HOST=mongo:27017 \
@@ -148,7 +148,7 @@ echo "Starting misinfo-server"
 docker pull martinomensio/misinfome-backend:$BACKEND_DEV_TAG
 if [ "$local" = "1" ]; then
     # local
-    docker run -d --restart always \
+    docker run -dit --restart always \
     --name mm35626_misinfo_server \
     -p 127.0.0.1:20000:5000 \
     -e MONGO_HOST=mongo:27017 \
@@ -156,12 +156,12 @@ if [ "$local" = "1" ]; then
     -e TWITTER_CONNECTOR="http://twitter_connector:8000/" \
     -e REDIS_HOST="redis" \
     -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" \
-    -e DATA_ENDPOINT="http://claimreview_scraper:8000" \
+    -e DATA_ENDPOINT="http://claimreview_collector:8000" \
     -e COINFORM_TOKEN=$COINFORM_TOKEN \
     -v `pwd`/backend/api:/app/api \
     -v `pwd`/backend/app-v1:/app/app-v1 \
     -v `pwd`/backend/app-v2:/app/app-v2 \
-    --link=mm35626_claimreview_collector_light:claimreview_scraper \
+    --link=mm35626_claimreview_collector_light:claimreview_collector \
     --link=mm35626_mongo:mongo \
     --link=mm35626_credibility:credibility \
     --link=mm35626_twitter_connector:twitter_connector \
@@ -169,7 +169,7 @@ if [ "$local" = "1" ]; then
     martinomensio/misinfome-backend:$BACKEND_DEV_TAG
 else
     # server web
-    docker run -d --restart always \
+    docker run -dit --restart always \
     --name mm35626_misinfo_server \
     -p 127.0.0.1:20000:5000 \
     -e MONGO_HOST=mongo:27017 \
@@ -177,14 +177,20 @@ else
     -e TWITTER_CONNECTOR="http://twitter-connector:8000/" \
     -e REDIS_HOST="redis" \
     -e GATEWAY_MODULE_ENDPOINT="https://localhost:1234/test" \
-    -e DATA_ENDPOINT="http://claimreview-scraper:8000" \
+    -e DATA_ENDPOINT="http://claimreview-collector:8000" \
     -e COINFORM_TOKEN=$COINFORM_TOKEN \
     -v `pwd`/backend/app-v1:/app/app-v1 \
     -v `pwd`/backend/app-v2:/app/app-v2 \
-    --link=mm35626_claimreview_collector_light:claimreview-scraper \
+    --link=mm35626_claimreview_collector_light:claimreview-collector \
     --link=mm35626_mongo:mongo \
     --link=mm35626_credibility:credibility \
     --link=mm35626_twitter_connector:twitter-connector \
     --link=mm35626_redis:redis \
     martinomensio/misinfome-backend:$BACKEND_DEV_TAG
 fi
+
+
+# now wait until all containers are up
+echo "Waiting for containers to be up"
+sleep 10
+docker ps

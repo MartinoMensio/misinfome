@@ -18,7 +18,7 @@ g = Goose()
 mongo = pymongo.MongoClient()
 documents_now_collection = mongo['articles_collection']['documents_now']
 factchecking_collection = mongo['credibility']['factchecking_report']
-claimreviews_collection = mongo['claimreview_scraper']['claim_reviews']
+claimreviews_collection = mongo['claimreview_collector']['claim_reviews']
 
 
 def get_url_cache(url):
@@ -131,7 +131,7 @@ def get_urls_table():
         json.dump(results, f, indent=2)
     return results
 
-def join_info(attach_poynter='/Users/mm35626/KMi/coinform/MisinfoMe/claimreview-scraper/poynter_covid.tsv'):
+def join_info(attach_poynter='/Users/mm35626/KMi/coinform/MisinfoMe/claimreview-collector/poynter_covid.tsv'):
     with open('urls_labeled.json') as f:
         urls_labeled = json.load(f)
     

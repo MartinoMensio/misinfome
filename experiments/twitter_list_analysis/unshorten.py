@@ -39,7 +39,7 @@ def get_factchecked_urls():
         unshortened = list_processing.read_json(unshortened_urls_path)
     else:
         # list_1 = list_processing.read_json('data/known_urls_dataset_resources.json')
-        list_urls = list_processing.read_json('data/known_urls_claimreview_scraper.json')
+        list_urls = list_processing.read_json('data/known_urls_claimreview_collector.json')
         # list_urls = list(set(list_1 + list_2))
         unshortened = unshorten_all(list_urls)
         list_processing.write_json(unshortened_urls_path, unshortened)

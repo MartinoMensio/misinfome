@@ -1,2 +1,2 @@
-import claimreview_scraper
+import claimreview_collector
 

@@ -10,9 +10,9 @@
 [submodule "credibility"]
 	path = credibility
 	url = https://github.com/MartinoMensio/credibility
-[submodule "claimreview-scraper"]
-	path = claimreview-scraper
-	url = https://github.com/MartinoMensio/claimreview-scraper.git
+[submodule "claimreview-collector"]
+	path = claimreview-collector
+	url = https://github.com/MartinoMensio/claimreview-collector.git
 [submodule "frontend-v2"]
 	path = frontend-v2
 	url = https://github.com/MartinoMensio/misinfome-frontend-v2.git
