@@ -23,7 +23,7 @@ jobs:
   update-submodule:
     name: Update submodule triggered by repository_dispatch
     runs-on: ubuntu-latest
-    needs: update-branch
+    needs: concurrency
     steps:
     - 
       uses: actions/checkout@v3
