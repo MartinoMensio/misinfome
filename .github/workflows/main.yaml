@@ -20,8 +20,8 @@ jobs:
       uses: actions/checkout@v3
     - 
       uses: ahmadnassri/action-workflow-queue@v1
-  update-submodule:
-    name: Update submodule triggered by repository_dispatch
+  test:
+    name: Integration tests
     runs-on: ubuntu-latest
     needs: concurrency
     steps:
@@ -29,57 +29,65 @@ jobs:
       uses: actions/checkout@v3
       with:
         ref: ${{github.ref_name}}
+        submodules: recursive
     -
       if: ${{ github.event_name == 'repository_dispatch' }}
       name: Update submodule ${{ github.event.client_payload.submodule }} to ${{ github.event.client_payload.commit_sha }}
       # "submodule": "${{ github.event.repository.name }}",
       #     "commit_sha": "${{ github.sha }}"
       #     "docker_image": "${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ env.TODAY }}",
-      run: echo "TODO"
-    - name: Get current date # for tagging the image, can go back in time if latest is problematic
-      id: date
-      run: echo "TODAY=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-    - name: ${{ env.TODAY }}
-      run: echo ${{ env.TODAY }}
-  test:
-    name: Integration tests
-    runs-on: ubuntu-latest
-    needs: update-submodule
-    steps:
+      run: |
+        pushd ${{ github.event.client_payload.submodule }}
+        git fetch
+        popd
     - 
-      uses: actions/checkout@v3
+      if: ${{ github.event_name == 'repository_dispatch' }}
+      name: add and commit changes for {{ github.event.client_payload.submodule }}
+      uses: EndBug/add-and-commit@v9
       with:
-        ref: ${{github.ref_name}}
-    -
-      name: run tests
-      run: echo "TODO"
-  docker:
-    name: Docker publish tag latest
-    runs-on: ubuntu-latest
-    needs: test
-    if: github.ref_name == 'master'
-    steps:
-    -
-      name: Checkout
-      uses: actions/checkout@v3
-      with:
-        ref: ${{github.ref_name}}
-    -
-      name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-    -
-      name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+        # The arguments for the `git add` command (see the paragraph below for more info)
+        # Default: '.'
+        add: '{{ github.event.client_payload.submodule }}'
+        # Additional arguments for the git commit command. The --message argument is already set by the message input.
+        # Default: ''
+        commit: --signoff
+
+        # Determines the way the action fills missing author name and email. Three options are available:
+        # - github_actor -> UserName <UserName@users.noreply.github.com>
+        # - user_info -> Your Display Name <your-actual@email.com>
+        # - github_actions -> github-actions <email associated with the github logo>
+        # Default: github_actor
+        default_author: github_actor
+
+        # The message for the commit.
+        # Default: 'Commit from GitHub Actions (name of the workflow)'
+        message: '[automatic] updated submodule {{ github.event.client_payload.submodule }} to ${{ github.event.client_payload.commit_sha }}'
+
+        # The way the action should handle pathspec errors from the add and remove commands. Three options are available:
+        # - ignore -> errors will be logged but the step won't fail
+        # - exitImmediately -> the action will stop right away, and the step will fail
+        # - exitAtEnd -> the action will go on, every pathspec error will be logged at the end, the step will fail.
+        # Default: ignore
+        pathspec_error_handling: ignore
     - 
+      if: ${{ github.event_name != 'repository_dispatch' }}
+      name: Instantiate with docker stable
+      run: bash scripts/start_services_web.sh
+    - 
+      if: ${{ github.event_name == 'repository_dispatch' }}
+      name: Instantiate with docker with dev {{ github.event.client_payload.submodule }}}
+      run: bash scripts/start_services_web.sh -d ${{ github.event.client_payload.submodule }}
+    - 
+      name: Test
+      run: echo TODO
+    - 
+      if: ${{ github.event_name == 'repository_dispatch' }} && ${{ github.ref_name == 'master' }}
       name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - 
-      name: Get Releases with latest date
-      id: date
-      run: echo "TAG=TODO" >> $GITHUB_ENV
-    -
-      name: Build and push
-      run: echo "TODO"
+      if: ${{ github.event_name == 'repository_dispatch' }} && ${{ github.ref_name == 'master' }}
+      name: retag docker images
+      run: docker container run -i --rm --net host -v regctl-conf:/home/appuser/.regctl/ ghcr.io/regclient/regctl:latest image copy {{ github.event.client_payload.submodule }}:dev {{ github.event.client_payload.submodule }}:latest
