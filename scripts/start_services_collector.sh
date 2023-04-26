@@ -109,7 +109,7 @@ else
         -p 127.0.0.1:20500:8000 \
         -e GOOGLE_FACTCHECK_EXPLORER_COOKIE=$GOOGLE_FACTCHECK_EXPLORER_COOKIE \
         -e GITHUB_TOKEN=$GITHUB_TOKEN \
-        -v `pwd`claimreview-collector/data:/app/data \
+        -v `pwd`/claimreview-collector/data:/app/data \
         --link=mm35626_flaresolverr:flaresolverr \
         -e FLARESOLVERR_HOST=flaresolverr:8191 \
         --link=mm35626_mongo:mongo \
