@@ -40,6 +40,7 @@ jobs:
         pushd ${{ github.event.client_payload.submodule }}
         git fetch
         # git checkout ${{ github.event.client_payload.commit_sha }}
+        git config pull.rebase false
         git pull
         popd
     - 
