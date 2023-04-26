@@ -20,6 +20,7 @@ do
             credibility) CREDIBILITY_DEV_TAG=dev;;
             twitter-connector) TWITTER_DEV_TAG=dev;;
             claimreview-collector) CLAIMREVIEW_DEV_TAG=dev;;
+            all) BACKEND_DEV_TAG=dev; CREDIBILITY_DEV_TAG=dev; TWITTER_DEV_TAG=dev; CLAIMREVIEW_DEV_TAG=dev;;
         esac;;
     esac
 done
@@ -28,7 +29,7 @@ if [ "$help" = "1" ]; then
     echo "Usage: $0 [-l] [-r] [-d misinfome-backend|credibility|twitter-connector|claimreview-collector] [-h]"
     echo "  -m: run with source code mapped as volume"
     echo "  -r: remove containers"
-    echo "  -d: which submodule is using dev tag (misinfome-backend, credibility, twitter-connector, claimreview-collector)"
+    echo "  -d: which submodule is using dev tag (misinfome-backend, credibility, twitter-connector, claimreview-collector, all)"
     echo "  -h: help"
     exit 0
 fi

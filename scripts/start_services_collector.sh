@@ -4,9 +4,6 @@ set -e
 local=0
 remove=0
 help=0
-BACKEND_DEV_TAG=latest
-CREDIBILITY_DEV_TAG=latest
-TWITTER_DEV_TAG=latest
 CLAIMREVIEW_DEV_TAG=latest
 
 while getopts mrd:h flag
@@ -17,6 +14,7 @@ do
         h) help=1;;
         d) case "${OPTARG}" in
             claimreview-collector) CLAIMREVIEW_DEV_TAG=dev;;
+            all) CLAIMREVIEW_DEV_TAG=dev;;
         esac;;
     esac
 done
