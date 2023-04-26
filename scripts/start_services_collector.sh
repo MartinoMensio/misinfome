@@ -59,7 +59,7 @@ else
     docker run -dit --restart always \
         --name mm35626_mongo \
         -p 127.0.0.1:27017:27017 \
-        -v mm5626_mongo_volume:/data/db \
+        -v mm35626_mongo_volume:/data/db \
         mongo:5
 fi
 
