@@ -24,7 +24,7 @@ if [ "$help" = "1" ]; then
     exit 0
 fi
 
-pushd backend
+cd backend
 rm -rf app-v2
 mkdir -p app-v2
 cd app-v2
@@ -37,4 +37,4 @@ else
     wget https://github.com/MartinoMensio/misinfome-frontend/releases/download/latest/app.zip
     unzip -o app.zip -d .
 fi
-popd
+cd ../..
