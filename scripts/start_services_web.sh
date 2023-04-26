@@ -26,7 +26,7 @@ do
 done
 
 if [ "$help" = "1" ]; then
-    echo "Usage: $0 [-l] [-r] [-d misinfome-backend|credibility|twitter-connector|claimreview-collector] [-h]"
+    echo "Usage: $0 [-m] [-r] [-d misinfome-backend|credibility|twitter-connector|claimreview-collector] [-h]"
     echo "  -m: run with source code mapped as volume"
     echo "  -r: remove containers"
     echo "  -d: which submodule is using dev tag (misinfome-backend, credibility, twitter-connector, claimreview-collector, all)"
@@ -142,6 +142,17 @@ else
     -e PINKSLIME_SPREADSHEET_KEY=$PINKSLIME_SPREADSHEET_KEY \
     --link=mm35626_mongo:mongo \
     martinomensio/credibility:$CREDIBILITY_DEV_TAG
+fi
+
+# frontend
+echo "Downloading frontend"
+if [ "$local" = "1" ]; then
+    # local
+    pwd
+    ./scripts/download_frontend.sh -m
+else
+    # server web
+    ./scripts/download_frontend.sh
 fi
 
 # misinfo-server

@@ -34,6 +34,7 @@ if [ "$remove" = "1" ]; then
     if [ "$local" = "1" ]; then
         echo "no mongo local"
     else
+        echo "also removing mongo container"
         docker rm -f mm35626_mongo
     fi
     exit 0
