@@ -84,7 +84,7 @@ jobs:
       name: Test
       run: echo TODO
     - 
-      if: ${{ github.event_name == 'repository_dispatch' && github.ref_name == 'master' }}
+      if: ${{ github.event_name == 'repository_dispatch' && github.ref_name == 'master' && github.event.client_payload.repository != 'misinfome-frontend' }}
       name: retag docker images
       run: |
         docker container run -i --rm --net host -v regctl-conf:/home/appuser/.regctl/ ghcr.io/regclient/regctl:latest registry login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
