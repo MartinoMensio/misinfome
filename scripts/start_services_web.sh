@@ -62,11 +62,11 @@ docker run -dit --restart always \
 
 # redis
 echo "Starting redis"
-docker pull redis
+docker pull redis:alpine
 docker run -dit --restart always \
     --name mm35626_redis \
     -p 127.0.0.1:6379:6379 \
-    redis
+    redis:alpine
 
 # twitter connector
 echo "Starting twitter connector"
