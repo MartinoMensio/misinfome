@@ -73,6 +73,9 @@ jobs:
         # Default: ignore
         pathspec_error_handling: ignore
     - 
+      name: create docker volume
+      run: docker volume create --name=mm35626_mongo_volume
+    - 
       if: ${{ github.event_name != 'repository_dispatch' }}
       name: Instantiate with docker stable
       run: COMMAND=start.web bash scripts/main.sh
