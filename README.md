@@ -76,6 +76,8 @@ docker build . -t martinomensio/misinfome
 # - mount .env file that contains all the env variables with secrets
 # - CLAIMREVIEW_DATA_PATH: pass the host data path so that the container know where it is to run docker-compose
 # - COMMAND can be start.web or start.collector
+
+# web
 docker run -it --name mm35626_misinfome \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v `pwd`/.env:/MisinfoMe/.env \
@@ -83,8 +85,18 @@ docker run -it --name mm35626_misinfome \
         -v `pwd`/backend/app-v2:/MisinfoMe/backend/app-v2 \
         -e FRONTEND_V1_PATH=`pwd`/backend/app-v1 \
         -e FRONTEND_V2_PATH=`pwd`/backend/app-v2 \
+        -e INTERACTIVE=1 \
         -e COMMAND=start.web \
         martinomensio/misinfome
+# collector
+docker run -it --name mm35626_misinfome \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v `pwd`/.env:/MisinfoMe/.env \
+        -e CLAIMREVIEW_DATA_PATH=`pwd`/claimreview-collector/data \
+        -e INTERACTIVE=1 \
+        -e COMMAND=start.collector \
+        martinomensio/misinfome
+
 # with docker-compose installed
 COMMAND=start.web bash scripts/main.sh
 COMMAND=start.web.dev bash scripts/main.sh

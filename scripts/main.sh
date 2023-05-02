@@ -2,13 +2,12 @@
 set -e
 
 help=0
-interactive=0
 
 while getopts d:h flag
 do
     case "${flag}" in
         h) help=1;;
-        i) interactive=1;;
+        i) export INTERACTIVE=1;;
         d) case "${OPTARG}" in
             misinfome-backend) export BACKEND_TAG=dev;;
             credibility) export CREDIBILITY_TAG=dev;;
@@ -42,7 +41,7 @@ if [ "$COMMAND" = "start.web" ]; then
     ./scripts/download_frontend.sh
     export COMPOSE_PROJECT_NAME=mm35626-web
     docker-compose -f docker-compose.web.yml pull
-    if [ "$interactive" = "1" ]; then
+    if [ "$INTERACTIVE" = "1" ]; then
         docker-compose -f docker-compose.web.yml up
     else
         docker-compose -f docker-compose.web.yml up --detach
@@ -52,7 +51,7 @@ elif [ "$COMMAND" = "start.web.dev" ]; then
     ./scripts/download_frontend.sh -m
     export COMPOSE_PROJECT_NAME=mm35626-web
     docker-compose -f docker-compose.web.yml -f docker-compose.web.dev.yml pull
-    if [ "$interactive" = "1" ]; then
+    if [ "$INTERACTIVE" = "1" ]; then
         docker-compose -f docker-compose.web.yml -f docker-compose.web.dev.yml up
     else
         docker-compose -f docker-compose.web.yml -f docker-compose.web.dev.yml up --detach
@@ -61,7 +60,7 @@ elif [ "$COMMAND" = "start.collector" ]; then
     echo "Starting collector services"
     export COMPOSE_PROJECT_NAME=mm35626-collector
     docker-compose -f docker-compose.collector.yml pull
-    if [ "$interactive" = "1" ]; then
+    if [ "$INTERACTIVE" = "1" ]; then
         docker-compose -f docker-compose.collector.yml up
     else
         docker-compose -f docker-compose.collector.yml --detach
@@ -70,8 +69,8 @@ elif [ "$COMMAND" = "start.collector.dev" ]; then
     echo "Starting collector services dev"
     export COMPOSE_PROJECT_NAME=mm35626-collector
     docker-compose -f docker-compose.collector.yml -f docker-compose.collector.yml pull
-    if [ "$interactive" = "1" ]; then
-        docker-compose -f docker-compose.collector.yml -f docker-compose.collector.yml up up
+    if [ "$INTERACTIVE" = "1" ]; then
+        docker-compose -f docker-compose.collector.yml -f docker-compose.collector.yml up
     else
         docker-compose -f docker-compose.collector.yml -f docker-compose.collector.yml up --detach
     fi
