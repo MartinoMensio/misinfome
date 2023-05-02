@@ -45,19 +45,23 @@ echo "  claimreview-collector: $CLAIMREVIEW_COLLECTOR_TAG"
 if [ "$COMMAND" = "start.web" ]; then
     echo "Starting web services"
     ./scripts/download_frontend.sh
+    export COMPOSE_PROJECT_NAME=mm35626-web
     docker-compose -f docker-compose.web.yml pull
     docker-compose -f docker-compose.web.yml up
 elif [ "$COMMAND" = "start.web.dev" ]; then
     echo "Starting web services dev"
     ./scripts/download_frontend.sh -m
+    export COMPOSE_PROJECT_NAME=mm35626-web
     docker-compose -f docker-compose.web.yml -f docker-compose.web.dev.yml pull
     docker-compose -f docker-compose.web.yml -f docker-compose.web.dev.yml up
 elif [ "$COMMAND" = "start.collector" ]; then
     echo "Starting collector services"
+    export COMPOSE_PROJECT_NAME=mm35626-collector
     docker-compose -f docker-compose.collector.yml pull
     docker-compose -f docker-compose.collector.yml up
 elif [ "$COMMAND" = "start.collector.dev" ]; then
     echo "Starting collector services dev"
+    export COMPOSE_PROJECT_NAME=mm35626-collector
     docker-compose -f docker-compose.collector.yml -f docker-compose.collector.yml pull
     docker-compose -f docker-compose.collector.yml -f docker-compose.collector.yml up
 else

@@ -1,4 +1,4 @@
-name: mm35626-collector
+# name: mm35626-collector
 services:
   mongo:
     extends:
