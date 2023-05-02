@@ -1,3 +1,4 @@
+version: '3.8'
 name: mm35626-web
 services:
   mongo:

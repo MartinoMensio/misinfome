@@ -78,7 +78,7 @@ jobs:
       run: COMMAND=start.web bash scripts/main.sh
     - 
       if: ${{ github.event_name == 'repository_dispatch' }}
-      name: Instantiate with docker with dev ${{ github.event.client_payload.repository }}}
+      name: Instantiate with docker with dev ${{ github.event.client_payload.repository }}
       run: COMMAND=start.web bash scripts/main.sh -d ${{ github.event.client_payload.repository }}
     - 
       name: Test
