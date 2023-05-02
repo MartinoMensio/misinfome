@@ -103,22 +103,3 @@ misinfo.me
         AllowEncodedSlashes NoDecode
 ```
 sudo systemctl restart httpd.service
-
-
-
-
-
-## Traefik (not used)
-
-Run the orchestrator
-
-```bash
-# old command
-docker run -p 80:80 -p 8080:8080 -v /var/run/docker.sock:/var/run/docker.sock traefik --api --docker
-
-# new command, with dashboard on localhost:8080
-docker run -p 80:80 -p 8080:8080 -v /var/run/docker.sock:/var/run/docker.sock traefik --api.insecure=true
-
-# with traefik.yml config file
-docker run --rm -p 80:80 -p 8080:8080 -v /var/run/docker.sock:/var/run/docker.sock -v $PWD/traefik.yml:/etc/traefik/traefik.yml traefik
-```
