@@ -19,8 +19,11 @@ This project has two main deployments:
 |         port:12345         │    │         port:20300          │
 ├────────────────────────────┤    ├─────────────────────────────┤
 |            mongo           │    │ claimreview_collector_light │
-|         port:27017         │    │         port:20400          │
-└────────────────────────────┘    └─────────────────────────────┘
+|         port:20600         │    │         port:20400          │
+└────────────────────────────┘    ├─────────────────────────────┤
+                                  │            mongo            │
+                                  │          port:20700         │
+                                  └─────────────────────────────┘
 ```
 
 The declaration is implemented with the scripts `scripts/start_services_web.sh` and `scripts/start_services_cllectr.sh`.
@@ -63,6 +66,35 @@ Claimreview microservice `claimreview_collector_light` provides access to the da
 - start the two deployments
 - init database for web
 
+
+Docker-compose
+```bash
+# without docker-compose installed
+docker build . -t martinomensio/misinfome
+# run docker-compose image that will do the same:
+# - mount /var/run/docker.sock to give control of docker
+# - mount .env file that contains all the env variables with secrets
+# - CLAIMREVIEW_DATA_PATH: pass the host data path so that the container know where it is to run docker-compose
+# - COMMAND can be start.web or start.collector
+docker run -it --name mm35626_misinfome \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v `pwd`/.env:/MisinfoMe/.env \
+        -e CLAIMREVIEW_DATA_PATH=`pwd`/claimreview-collector/data \
+        -v `pwd`/backend/app-v2:/MisinfoMe/backend/app-v2 \
+        -e FRONTEND_V1_PATH=`pwd`/backend/app-v1 \
+        -e FRONTEND_V2_PATH=`pwd`/backend/app-v2 \
+        -e COMMAND=start.web \
+        martinomensio/misinfome
+# with docker-compose installed
+COMMAND=start.web bash scripts/main.sh
+COMMAND=start.web.dev bash scripts/main.sh
+COMMAND=start.web TWITTER_CONNECTOR_TAG=dev bash scripts/main.sh
+COMMAND=start.collector TWITTER_CONNECTOR_TAG=dev bash scripts/main.sh
+COMMAND=start.collector.dev TWITTER_CONNECTOR_TAG=dev bash scripts/main.sh
+```
+
+TODOs:
+- copy volumes before deploy (mm35626_mongo_volume to mm35626_web_mongo_volume and mm35626_collector_mongo_volume)
 
 
 ## Auto-update

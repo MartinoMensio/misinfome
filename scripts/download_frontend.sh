@@ -25,8 +25,8 @@ if [ "$help" = "1" ]; then
 fi
 
 cd backend
-rm -rf app-v2
-mkdir -p app-v2
+rm -rf app-v2/*
+# mkdir -p app-v2
 cd app-v2
 if [ "$local" = "1" ]; then
     echo "downloading dev frontend"

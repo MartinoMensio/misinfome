@@ -1,0 +1,38 @@
+name: mm35626-collector
+services:
+  mongo:
+    extends:
+      file: common-services.yml
+      service: mongo
+    ports:
+      - "127.0.0.1:20600:27017"
+    volumes:
+      - mm35626_mongo_volume:/data/db
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    ports:
+      - "127.0.0.1:8191:8191"
+    environment:
+      - LOG_LEVEL=info
+  dirtyjson:
+    image: martinomensio/dirtyjson
+    ports:
+      - "127.0.0.1:12345:12345"
+  claimreview-collector-full:
+    extends:
+      file: common-services.yml
+      service: claimreview-collector
+    image: martinomensio/claimreview-collector:${CLAIMREVIEW_COLLECTOR_TAG:-latest}
+    environment:
+      - ROLE=full
+      - PUBLISH_GITHUB=true
+      - DIRTYJSON_REST_ENDPOINT="http://dirtyjson_server:12345"
+      - TWITTER_CONNECTOR="https://misinfo.me/misinfo/api/twitter"
+      - MISINFO_BACKEND="https://misinfo.me"
+      - FLARESOLVERR_HOST=flaresolverr:8191
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GOOGLE_FACTCHECK_EXPLORER_COOKIE=${GOOGLE_FACTCHECK_EXPLORER_COOKIE}
+
+volumes:
+  mm35626_mongo_volume:
+    external: true

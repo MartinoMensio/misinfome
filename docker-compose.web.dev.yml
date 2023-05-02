@@ -1,0 +1,13 @@
+services:
+  mongo:
+    ports:
+      - 27017:27017
+  twitter-connector:
+    volumes:
+      - ./twitter-connector/app:/app/app
+  claimreview-collector-light:
+    volumes:
+      - ./claimreview-collector/claimreview_collector:/app/claimreview_collector
+  credibility:
+    volumes:
+      - ./credibility/app:/app/app

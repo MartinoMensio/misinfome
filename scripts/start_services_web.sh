@@ -148,7 +148,6 @@ fi
 echo "Downloading frontend"
 if [ "$local" = "1" ]; then
     # local
-    pwd
     ./scripts/download_frontend.sh -m
 else
     # server web

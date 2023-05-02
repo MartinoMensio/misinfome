@@ -1,0 +1,49 @@
+name: mm35626-web
+services:
+  mongo:
+    extends:
+      file: common-services.yml
+      service: mongo
+    ports:
+      - "127.0.0.1:20700:27017"
+    volumes:
+      - mm35626_mongo_volume:/data/db
+  redis:
+    extends:
+      file: common-services.yml
+      service: redis
+  twitter-connector:
+    extends:
+      file: common-services.yml
+      service: twitter-connector
+    image: martinomensio/twitter-connector:${TWITTER_CONNECTOR_TAG:-latest}
+    environment:
+      - TWITTER_TOKEN_ACADEMIC=${TWITTER_TOKEN_ACADEMIC}
+  claimreview-collector-light:
+    extends:
+      file: common-services.yml
+      service: claimreview-collector
+    image: martinomensio/claimreview-collector:${CLAIMREVIEW_COLLECTOR_TAG:-latest}
+    environment:
+      - ROLE=light
+  credibility:
+    extends:
+      file: common-services.yml
+      service: credibility
+    image: martinomensio/credibility:${CREDIBILITY_TAG:-latest}
+    environment:
+      - MYWOT_USERID=${MYWOT_USERID}
+      - MYWOT_KEY=${MYWOT_KEY}
+      - PINKSLIME_SPREADSHEET_KEY=${PINKSLIME_SPREADSHEET_KEY}
+  backend:
+    extends:
+      file: common-services.yml
+      service: backend
+    image: martinomensio/misinfome-backend:${BACKEND_TAG:-latest}
+    environment:
+      - COINFORM_TOKEN=${COINFORM_TOKEN}
+      - DATA_ENDPOINT=http://claimreview-collector-light:8000
+
+volumes:
+  mm35626_mongo_volume:
+    external: true
