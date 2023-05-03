@@ -24,6 +24,8 @@ services:
       file: common-services.yml
       service: claimreview-collector
     image: martinomensio/claimreview-collector:${CLAIMREVIEW_COLLECTOR_TAG:-latest}
+    ports:
+      - "127.0.0.1:20400:8000"
     environment:
       - ROLE=light
   credibility:

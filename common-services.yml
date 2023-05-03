@@ -13,8 +13,6 @@ services:
       - MONGO_HOST=mongo
   claimreview-collector:
     image: martinomensio/claimreview-collector
-    ports:
-      - "127.0.0.1:20400:8000"
     volumes:
       - ${CLAIMREVIEW_DATA_PATH:-./claimreview-collector/data}:/app/data
     environment:
