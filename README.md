@@ -88,6 +88,7 @@ docker run -it --name mm35626_misinfome \
         -e INTERACTIVE=1 \
         -e COMMAND=start.web \
         martinomensio/misinfome
+
 # collector
 docker run -it --name mm35626_misinfome \
         -v /var/run/docker.sock:/var/run/docker.sock \

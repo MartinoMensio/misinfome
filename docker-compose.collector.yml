@@ -26,9 +26,9 @@ services:
     environment:
       - ROLE=full
       - PUBLISH_GITHUB=true
-      - DIRTYJSON_REST_ENDPOINT="http://dirtyjson_server:12345"
-      - TWITTER_CONNECTOR="https://misinfo.me/misinfo/api/twitter"
-      - MISINFO_BACKEND="https://misinfo.me"
+      - DIRTYJSON_REST_ENDPOINT=http://dirtyjson_server:12345
+      - TWITTER_CONNECTOR=https://misinfo.me/misinfo/api/twitter
+      - MISINFO_BACKEND=https://misinfo.me
       - FLARESOLVERR_HOST=flaresolverr:8191
       - GITHUB_TOKEN=${GITHUB_TOKEN}
       - GOOGLE_FACTCHECK_EXPLORER_COOKIE=${GOOGLE_FACTCHECK_EXPLORER_COOKIE}
