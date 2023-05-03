@@ -26,9 +26,10 @@ services:
     ports:
       - "127.0.0.1:20500:8000"
     environment:
+      - PYTHONUNBUFFERED=1
       - ROLE=full
       - PUBLISH_GITHUB=true
-      - DIRTYJSON_REST_ENDPOINT=http://dirtyjson_server:12345
+      - DIRTYJSON_REST_ENDPOINT=http://dirtyjson:12345
       - TWITTER_CONNECTOR=https://misinfo.me/misinfo/api/twitter
       - MISINFO_BACKEND=https://misinfo.me
       - FLARESOLVERR_HOST=flaresolverr:8191

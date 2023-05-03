@@ -102,6 +102,7 @@ docker run -it --name mm35626_misinfome \
 COMMAND=start.web bash scripts/main.sh
 COMMAND=start.web.dev bash scripts/main.sh
 COMMAND=start.web TWITTER_CONNECTOR_TAG=dev bash scripts/main.sh
+COMMAND=start.collector bash scripts/main.sh
 COMMAND=start.collector TWITTER_CONNECTOR_TAG=dev bash scripts/main.sh
 COMMAND=start.collector.dev TWITTER_CONNECTOR_TAG=dev bash scripts/main.sh
 ```
