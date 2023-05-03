@@ -26,7 +26,6 @@ services:
     ports:
       - "127.0.0.1:20500:8000"
     environment:
-      - PYTHONUNBUFFERED=1
       - ROLE=full
       - PUBLISH_GITHUB=true
       - DIRTYJSON_REST_ENDPOINT=http://dirtyjson:12345

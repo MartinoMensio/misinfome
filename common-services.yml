@@ -11,18 +11,21 @@ services:
       - "127.0.0.1:20200:8000"
     environment:
       - MONGO_HOST=mongo
+      - PYTHONUNBUFFERED=1
   claimreview-collector:
     image: martinomensio/claimreview-collector
     volumes:
       - ${CLAIMREVIEW_DATA_PATH:-./claimreview-collector/data}:/app/data
     environment:
       - MONGO_HOST=mongo:27017
+      - PYTHONUNBUFFERED=1
   credibility:
     image: martinomensio/credibility
     ports:
       - "127.0.0.1:20300:8000"
     environment:
       - MONGO_HOST=mongo:27017
+      - PYTHONUNBUFFERED=1
   backend:
     image: martinomensio/misinfome-backend
     ports:
@@ -33,6 +36,7 @@ services:
       - TWITTER_CONNECTOR=http://twitter-connector:8000/
       - REDIS_HOST=redis
       - GATEWAY_MODULE_ENDPOINT=https://localhost:1234/test
+      - PYTHONUNBUFFERED=1
     volumes:
       - ${FRONTEND_V1_PATH:-./backend/app-v1}:/app/app-v1
       - ${FRONTEND_V2_PATH:-./backend/app-v2}:/app/app-v2
