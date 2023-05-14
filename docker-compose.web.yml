@@ -16,6 +16,8 @@ services:
     extends:
       file: common-services.yml
       service: twitter-connector
+    depends_on:
+      - mongo
     image: martinomensio/twitter-connector:${TWITTER_CONNECTOR_TAG:-latest}
     environment:
       - TWITTER_TOKEN_ACADEMIC=${TWITTER_TOKEN_ACADEMIC}
@@ -23,6 +25,8 @@ services:
     extends:
       file: common-services.yml
       service: claimreview-collector
+    depends_on:
+      - mongo
     image: martinomensio/claimreview-collector:${CLAIMREVIEW_COLLECTOR_TAG:-latest}
     ports:
       - "127.0.0.1:20400:8000"
@@ -32,6 +36,8 @@ services:
     extends:
       file: common-services.yml
       service: credibility
+    depends_on:
+      - mongo
     image: martinomensio/credibility:${CREDIBILITY_TAG:-latest}
     environment:
       - MYWOT_USERID=${MYWOT_USERID}
@@ -41,6 +47,12 @@ services:
     extends:
       file: common-services.yml
       service: backend
+    depends_on:
+      - mongo
+      - redis
+      - twitter-connector
+      - claimreview-collector-light
+      - credibility
     image: martinomensio/misinfome-backend:${BACKEND_TAG:-latest}
     environment:
       - COINFORM_TOKEN=${COINFORM_TOKEN}

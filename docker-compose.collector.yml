@@ -22,6 +22,10 @@ services:
     extends:
       file: common-services.yml
       service: claimreview-collector
+    depends_on:
+      - mongo
+      - flaresolverr
+      - dirtyjson
     image: martinomensio/claimreview-collector:${CLAIMREVIEW_COLLECTOR_TAG:-latest}
     ports:
       - "127.0.0.1:20500:8000"
