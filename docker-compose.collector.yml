@@ -8,16 +8,19 @@ services:
       - "127.0.0.1:20600:27017"
     volumes:
       - mm35626_mongo_volume:/data/db
+    restart: unless-stopped
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
     ports:
       - "127.0.0.1:8191:8191"
     environment:
       - LOG_LEVEL=info
+    restart: unless-stopped
   dirtyjson:
     image: martinomensio/dirtyjson
     ports:
       - "127.0.0.1:12345:12345"
+    restart: unless-stopped
   claimreview-collector-full:
     extends:
       file: common-services.yml
@@ -38,6 +41,7 @@ services:
       - FLARESOLVERR_HOST=flaresolverr:8191
       - GITHUB_TOKEN=${GITHUB_TOKEN}
       - GOOGLE_FACTCHECK_EXPLORER_COOKIE=${GOOGLE_FACTCHECK_EXPLORER_COOKIE}
+    restart: unless-stopped
 
 volumes:
   mm35626_mongo_volume:

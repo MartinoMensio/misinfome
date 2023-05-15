@@ -79,6 +79,7 @@ docker build . -t martinomensio/misinfome
 
 # web
 docker run -it --name mm35626_misinfome \
+        --restart unless-stopped \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v `pwd`/.env:/MisinfoMe/.env \
         -e CLAIMREVIEW_DATA_PATH=`pwd`/claimreview-collector/data \
@@ -91,6 +92,7 @@ docker run -it --name mm35626_misinfome \
 
 # collector
 docker run -it --name mm35626_misinfome \
+        --restart unless-stopped \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v `pwd`/.env:/MisinfoMe/.env \
         -e CLAIMREVIEW_DATA_PATH=`pwd`/claimreview-collector/data \
