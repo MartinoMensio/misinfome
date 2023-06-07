@@ -127,6 +127,8 @@ The frontend instead is built and stored as an artifact, and deployed with the `
 
 Apache configuration
 
+/etc/httpd/sites/external
+
 misinfo.me
 
 ```

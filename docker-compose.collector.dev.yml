@@ -3,5 +3,7 @@ services:
     ports:
       - 27017:27017
   claimreview-collector-full:
+    volumes:
+      - ./claimreview-collector/claimreview_collector:/app/claimreview_collector
     environment:
       - PUBLISH_GITHUB=

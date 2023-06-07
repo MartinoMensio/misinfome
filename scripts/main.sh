@@ -68,11 +68,11 @@ elif [ "$COMMAND" = "start.collector" ]; then
 elif [ "$COMMAND" = "start.collector.dev" ]; then
     echo "Starting collector services dev"
     export COMPOSE_PROJECT_NAME=mm35626-collector
-    docker-compose -f docker-compose.collector.yml -f docker-compose.collector.yml pull
+    docker-compose -f docker-compose.collector.yml -f docker-compose.collector.dev.yml pull
     if [ "$INTERACTIVE" = "1" ]; then
-        docker-compose -f docker-compose.collector.yml -f docker-compose.collector.yml up
+        docker-compose -f docker-compose.collector.yml -f docker-compose.collector.dev.yml up
     else
-        docker-compose -f docker-compose.collector.yml -f docker-compose.collector.yml up --detach
+        docker-compose -f docker-compose.collector.yml -f docker-compose.collector.dev.yml up --detach
     fi
 else
     echo "Unknown command: $COMMAND, please set env variable COMMAND to one of start.web, start.web.dev, start.collector, start.collector.dev"
