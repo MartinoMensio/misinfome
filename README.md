@@ -147,9 +147,8 @@ misinfo.me
 
         # section :443
         ## Misinfo Service (mm35626):
-        #RewriteEngine on
-        #ProxyPass        / http://127.0.0.1:20000/
-        #ProxyPassReverse / http://127.0.0.1:20000/
+        ProxyPass        / http://127.0.0.1:20000/
+	ProxyPassReverse / http://127.0.0.1:20000/
         AllowEncodedSlashes NoDecode
 ```
 sudo systemctl restart httpd.service
