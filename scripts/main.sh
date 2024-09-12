@@ -42,9 +42,9 @@ if [ "$COMMAND" = "start.web" ]; then
     export COMPOSE_PROJECT_NAME=mm35626-web
     docker compose -f docker-compose.web.yml pull
     if [ "$INTERACTIVE" = "1" ]; then
-        docker-compose -f docker-compose.web.yml up
+        docker compose -f docker-compose.web.yml up
     else
-        docker-compose -f docker-compose.web.yml up --detach
+        docker compose -f docker-compose.web.yml up --detach
     fi
 elif [ "$COMMAND" = "start.web.dev" ]; then
     echo "Starting web services dev"
