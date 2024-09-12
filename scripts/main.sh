@@ -40,7 +40,7 @@ if [ "$COMMAND" = "start.web" ]; then
     echo "Starting web services"
     ./scripts/download_frontend.sh
     export COMPOSE_PROJECT_NAME=mm35626-web
-    docker compose -f dockercompose.web.yml pull
+    docker compose -f docker-compose.web.yml pull
     if [ "$INTERACTIVE" = "1" ]; then
         docker-compose -f docker-compose.web.yml up
     else
