@@ -40,7 +40,7 @@ if [ "$COMMAND" = "start.web" ]; then
     echo "Starting web services"
     ./scripts/download_frontend.sh
     export COMPOSE_PROJECT_NAME=mm35626-web
-    docker-compose -f docker-compose.web.yml pull
+    docker compose -f dockercompose.web.yml pull
     if [ "$INTERACTIVE" = "1" ]; then
         docker-compose -f docker-compose.web.yml up
     else
@@ -50,29 +50,29 @@ elif [ "$COMMAND" = "start.web.dev" ]; then
     echo "Starting web services dev"
     ./scripts/download_frontend.sh -m
     export COMPOSE_PROJECT_NAME=mm35626-web
-    docker-compose -f docker-compose.web.yml -f docker-compose.web.dev.yml pull
+    docker compose -f docker-compose.web.yml -f docker-compose.web.dev.yml pull
     if [ "$INTERACTIVE" = "1" ]; then
-        docker-compose -f docker-compose.web.yml -f docker-compose.web.dev.yml up
+        docker compose -f docker-compose.web.yml -f docker-compose.web.dev.yml up
     else
-        docker-compose -f docker-compose.web.yml -f docker-compose.web.dev.yml up --detach
+        docker compose -f docker-compose.web.yml -f docker-compose.web.dev.yml up --detach
     fi
 elif [ "$COMMAND" = "start.collector" ]; then
     echo "Starting collector services"
     export COMPOSE_PROJECT_NAME=mm35626-collector
-    docker-compose -f docker-compose.collector.yml pull
+    docker compose -f docker-compose.collector.yml pull
     if [ "$INTERACTIVE" = "1" ]; then
-        docker-compose -f docker-compose.collector.yml up
+        docker compose -f docker-compose.collector.yml up
     else
-        docker-compose -f docker-compose.collector.yml --detach
+        docker compose -f docker-compose.collector.yml --detach
     fi
 elif [ "$COMMAND" = "start.collector.dev" ]; then
     echo "Starting collector services dev"
     export COMPOSE_PROJECT_NAME=mm35626-collector
-    docker-compose -f docker-compose.collector.yml -f docker-compose.collector.dev.yml pull
+    docker compose -f docker-compose.collector.yml -f docker-compose.collector.dev.yml pull
     if [ "$INTERACTIVE" = "1" ]; then
-        docker-compose -f docker-compose.collector.yml -f docker-compose.collector.dev.yml up
+        docker compose -f docker-compose.collector.yml -f docker-compose.collector.dev.yml up
     else
-        docker-compose -f docker-compose.collector.yml -f docker-compose.collector.dev.yml up --detach
+        docker compose -f docker-compose.collector.yml -f docker-compose.collector.dev.yml up --detach
     fi
 else
     echo "Unknown command: $COMMAND, please set env variable COMMAND to one of start.web, start.web.dev, start.collector, start.collector.dev"
